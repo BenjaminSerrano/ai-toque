@@ -5,6 +5,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { adaptarIngrediente, adaptarPaso } from './adaptar.ts';
 import { CARPETA_DATOS, type DatosReceta } from './db.ts';
+import { DestinoNoPermitido, pedir } from './red.ts';
 import { limpiarTitulo, linkDeReceta, separarTexto } from './texto.ts';
 
 export interface Importacion {
@@ -24,7 +25,13 @@ const NAVEGADOR = {
 };
 
 async function descargar(url: string, cabeceras: Record<string, string> = {}): Promise<string> {
-	const respuesta = await fetch(url, { headers: { ...NAVEGADOR, ...cabeceras }, signal: AbortSignal.timeout(15_000) });
+	let respuesta: Response;
+	try {
+		respuesta = await pedir(url, { headers: { ...NAVEGADOR, ...cabeceras }, signal: AbortSignal.timeout(15_000) });
+	} catch (error) {
+		if (error instanceof DestinoNoPermitido) throw new ErrorImportacion(error.message);
+		throw error;
+	}
 	if (!respuesta.ok) throw new ErrorImportacion(`La página respondió con error ${respuesta.status}.`);
 	return respuesta.text();
 }
@@ -179,13 +186,26 @@ const TIPOS_IMAGEN: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png':
  * Las fotos de Instagram vienen con links que caducan en días.
  * Al guardar la receta se descarga una copia y se sirve desde /imagenes/.
  */
-export async function guardarImagenSiCaduca(imagen: string | null): Promise<string | null> {
-	if (!imagen || !/(cdninstagram\.com|fbcdn\.net)\//.test(imagen)) return imagen;
+const MAXIMO_IMAGEN = 10 * 1024 * 1024;
+
+function esDeInstagram(imagen: string): boolean {
 	try {
-		const respuesta = await fetch(imagen, { signal: AbortSignal.timeout(15_000) });
+		const { protocol, hostname } = new URL(imagen);
+		return protocol === 'https:' && /(^|\.)(cdninstagram\.com|fbcdn\.net)$/.test(hostname);
+	} catch {
+		return false;
+	}
+}
+
+export async function guardarImagenSiCaduca(imagen: string | null): Promise<string | null> {
+	if (!imagen || !esDeInstagram(imagen)) return imagen;
+	try {
+		const respuesta = await pedir(imagen, { signal: AbortSignal.timeout(15_000) });
 		const extension = TIPOS_IMAGEN[respuesta.headers.get('content-type')?.split(';')[0] ?? ''];
-		if (!respuesta.ok || !extension) return imagen;
+		const largo = Number(respuesta.headers.get('content-length') ?? 0);
+		if (!respuesta.ok || !extension || largo > MAXIMO_IMAGEN) return imagen;
 		const datos = Buffer.from(await respuesta.arrayBuffer());
+		if (datos.length > MAXIMO_IMAGEN) return imagen;
 		const nombre = `${createHash('sha1').update(datos).digest('hex')}.${extension}`;
 		mkdirSync(join(CARPETA_DATOS, 'imagenes'), { recursive: true });
 		writeFileSync(join(CARPETA_DATOS, 'imagenes', nombre), datos);

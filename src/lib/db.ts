@@ -94,10 +94,21 @@ export function eliminarReceta(id: number): void {
 export function leerFormulario(form: FormData): DatosReceta {
 	const texto = (campo: string) => String(form.get(campo) ?? '').replace(/\r\n/g, '\n').trim();
 	const opcional = (campo: string) => texto(campo) || null;
+	// Solo links http(s): un "javascript:…" guardado se ejecutaría al hacer clic en la receta.
+	const enlace = (campo: string) => {
+		const valor = texto(campo);
+		if (campo === 'imagen' && /^\/imagenes\/[a-f0-9]{40}\.(jpg|png|webp)$/.test(valor)) return valor;
+		try {
+			const url = new URL(valor);
+			return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
+		} catch {
+			return null;
+		}
+	};
 	return {
 		titulo: texto('titulo') || 'Receta sin título',
-		url: opcional('url'),
-		imagen: opcional('imagen'),
+		url: enlace('url'),
+		imagen: enlace('imagen'),
 		porciones: opcional('porciones'),
 		tiempo: opcional('tiempo'),
 		ingredientes: texto('ingredientes'),
