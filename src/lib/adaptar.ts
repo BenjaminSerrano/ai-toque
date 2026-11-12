@@ -103,6 +103,7 @@ const UNIDADES: Record<string, Unidad> = {
 	diente: { singular: 'diente', plural: 'dientes' },
 	lata: { singular: 'lata', plural: 'latas' },
 	paquete: { singular: 'paquete', plural: 'paquetes' },
+	sobre: { singular: 'sobre', plural: 'sobres' },
 	rebanada: { singular: 'rebanada', plural: 'rebanadas' },
 	punado: { singular: 'puñado', plural: 'puñados' },
 	ramita: { singular: 'ramita', plural: 'ramitas' },
@@ -141,6 +142,7 @@ const ALIAS: Record<string, string> = {
 	clove: 'diente', cloves: 'diente', diente: 'diente', dientes: 'diente',
 	can: 'lata', cans: 'lata', lata: 'lata', latas: 'lata',
 	package: 'paquete', packages: 'paquete', paquete: 'paquete', paquetes: 'paquete',
+	packet: 'sobre', packets: 'sobre', sachet: 'sobre', sachets: 'sobre', envelope: 'sobre', sobre: 'sobre', sobres: 'sobre',
 	slice: 'rebanada', slices: 'rebanada', rebanada: 'rebanada', rebanadas: 'rebanada',
 	handful: 'punado', handfuls: 'punado', puñado: 'punado', puñados: 'punado',
 	sprig: 'ramita', sprigs: 'ramita', ramita: 'ramita', ramitas: 'ramita',
@@ -251,7 +253,7 @@ export function adaptarIngrediente(linea: string): string {
 	const tomarParentesis = () => {
 		const p = resto.match(/^(\([^)]*\))\s*/);
 		if (!p) return;
-		parentesis = [parentesis, convertirTexto(p[1])].filter(Boolean).join(' ');
+		parentesis = [parentesis, traducir(convertirTexto(p[1]))].filter(Boolean).join(' ');
 		resto = resto.slice(p[0].length);
 	};
 	tomarParentesis();
@@ -266,6 +268,8 @@ export function adaptarIngrediente(linea: string): string {
 			tomarParentesis();
 		}
 	}
+	resto = resto.replace(/^[?¿!.,;]+\s*/, '');
+	tomarParentesis();
 	resto = resto.replace(/^(?:of|de)\s+/i, '');
 
 	const conversion = clave ? CONVERSIONES[clave] : undefined;

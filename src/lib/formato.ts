@@ -1,7 +1,7 @@
 // Ayudas para mostrar recetas como en la pizarra: ingrediente a la izquierda, cantidad a la derecha.
 
 const CANTIDAD = String.raw`(?:\d+(?:[.,]\d+)?(?:\s+\d+\/\d+|\/\d+)?|[½⅓⅔¼¾⅛⅜⅝⅞])(?:\s*[½⅓⅔¼¾⅛⅜⅝⅞])?`;
-const UNIDAD = String.raw`tazas?|cdas?\.|cdtas?\.|cucharad(?:it)?as?|kg|g|ml|l|cc|pizcas?|dientes?|latas?|paquetes?|rebanadas?|puñados?|ramitas?|atados?|unidad(?:es)?`;
+const UNIDAD = String.raw`tazas?|cdas?\.|cdtas?\.|cucharad(?:it)?as?|kg|g|ml|l|cc|pizcas?|dientes?|latas?|paquetes?|sobres?|rebanadas?|puñados?|ramitas?|atados?|unidad(?:es)?`;
 const RE_INICIO = new RegExp(
 	`^(${CANTIDAD}(?:\\s*(?:a|-|–)\\s*${CANTIDAD})?(?:\\s*(?:${UNIDAD})(?![\\p{L}]))?(?:\\s*\\([^)]*\\))?)\\s+(?:de\\s+)?(.+)$`,
 	'iu',

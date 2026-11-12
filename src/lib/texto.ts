@@ -52,6 +52,12 @@ export function separarTexto(texto: string): TextoSeparado {
 			seccion = 'ninguna';
 			continue;
 		}
+		// Subtítulo dentro de una sección: "Dough-", "Para el relleno:", "Masa —"
+		const subtitulo = seccion !== 'ninguna' && linea.length <= 40 && !/\d/.test(linea) && linea.match(/^(.+?)\s*[-–—:]$/);
+		if (subtitulo) {
+			(seccion === 'ingredientes' ? ingredientes : pasos).push(`${subtitulo[1]}:`);
+			continue;
+		}
 		if (seccion === 'ingredientes') ingredientes.push(linea);
 		else if (seccion === 'pasos') pasos.push(linea);
 	}

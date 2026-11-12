@@ -62,6 +62,11 @@ test('Instagram con subtítulo, pasos numerados y hashtags', () => {
 	assert.deepEqual(pasos, ['1. Mezcla todo y amasa 10 minutos.', '2. Hornea a 250 °C.']);
 });
 
+test('subtítulo con guion dentro de ingredientes ("Dough-")', () => {
+	const { ingredientes } = separarTexto('Ingredients you\'ll need:\nDough-\n3/4 cup (174g) water\n3 tablespoons unsalted butter softened');
+	assert.deepEqual(ingredientes, ['Dough:', '3/4 cup (174g) water', '3 tablespoons unsalted butter softened']);
+});
+
 test('texto sin encabezados: rescata cantidades y pasos numerados', () => {
 	const { ingredientes, pasos } = separarTexto('Queque rápido\n2 huevos\n1 taza de azúcar\n1) Batir todo\n2) Hornear');
 	assert.deepEqual(ingredientes, ['2 huevos', '1 taza de azúcar']);

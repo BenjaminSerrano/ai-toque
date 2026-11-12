@@ -207,6 +207,8 @@ export const INGLES: Record<string, string> = {
 	salt: 'sal',
 	'kosher salt': 'sal',
 	'sea salt': 'sal de mar',
+	'fine sea salt': 'sal de mar fina',
+	'fine salt': 'sal fina',
 	pepper: 'pimienta',
 	'black pepper': 'pimienta negra',
 	'ground black pepper': 'pimienta negra molida',
@@ -431,6 +433,20 @@ export const INGLES: Record<string, string> = {
 	fish: 'pescado',
 	'white fish': 'pescado blanco',
 
+	// Subtítulos de secciones
+	dough: 'masa',
+	filling: 'relleno',
+	topping: 'cobertura',
+	frosting: 'betún',
+	glaze: 'glaseado',
+	sauce: 'salsa',
+	'for the dough': 'para la masa',
+	'for the filling': 'para el relleno',
+	'for the topping': 'para la cobertura',
+	'for the frosting': 'para el betún',
+	'for the glaze': 'para el glaseado',
+	'for the sauce': 'para la salsa',
+
 	// Frases y conectores
 	'to taste': 'a gusto',
 	'for serving': 'para servir',
@@ -449,7 +465,9 @@ export const INGLES: Record<string, string> = {
 	and: 'y',
 	or: 'o',
 
-	// Medidas que aparecen dentro de paréntesis o notas: "(or 2 tsp oil)"
+	// Medidas que aparecen dentro de paréntesis o notas: "(or 2 tsp oil)", "(9 grams)"
+	gram: 'g',
+	grams: 'g',
 	cup: 'taza',
 	cups: 'tazas',
 	tablespoon: 'cda.',
