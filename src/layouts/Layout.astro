@@ -1,0 +1,71 @@
+---
+import Icono from '../components/Icono.astro';
+import '../styles/global.css';
+
+interface Props {
+	title?: string;
+}
+
+const { title } = Astro.props;
+const ruta = Astro.url.pathname;
+const enRecetario = ruta === '/' || ruta.startsWith('/recetas');
+const escribiendo = ruta === '/nueva' && !Astro.url.searchParams.has('url');
+---
+
+<!doctype html>
+<html lang="es-CL">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#1e2a24" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>{title ? `${title} · AI toque` : 'AI toque'}</title>
+	</head>
+	<body class="min-h-dvh text-lg antialiased">
+		<header class="border-b-2 border-tiza/15">
+			<nav class="mx-auto flex max-w-[90rem] items-center justify-between gap-4 px-5 py-3 sm:px-8 lg:px-[72px]" aria-label="Principal">
+				<a href="/" class="tiza -my-1 text-5xl sm:text-6xl" aria-label="AI toque, ir al recetario">
+					A<span class="text-naranja">I</span> toque
+				</a>
+				<div class="flex items-center gap-1 sm:gap-6">
+					<a
+						href="/"
+						class:list={[
+							'rounded-md px-2 py-2 font-semibold decoration-amarillo decoration-[3px] underline-offset-[10px] hover:underline',
+							enRecetario && 'underline',
+						]}
+						aria-current={ruta === '/' ? 'page' : undefined}>Recetario</a
+					>
+					<a
+						href="/nueva"
+						class:list={[
+							'flex items-center gap-2 rounded-md px-2 py-2 font-semibold decoration-amarillo decoration-[3px] underline-offset-[10px] hover:underline',
+							escribiendo && 'underline',
+						]}
+						aria-current={escribiendo ? 'page' : undefined}
+					>
+						<Icono nombre="lapiz" />
+						<span>Escribir<span class="hidden sm:inline"> una receta</span></span>
+					</a>
+				</div>
+			</nav>
+		</header>
+		<main class="mx-auto max-w-[90rem] px-5 pt-8 pb-20 sm:px-8 sm:pt-12 lg:px-[72px]">
+			<slot />
+		</main>
+
+		<script>
+			// Mientras se importa o guarda, el botón avisa que está trabajando y no se envía dos veces.
+			document.addEventListener('submit', (evento) => {
+				const formulario = evento.target as HTMLFormElement;
+				const boton = (evento.submitter ?? formulario.querySelector('button[type="submit"]')) as HTMLButtonElement | null;
+				const texto = boton?.dataset.espera;
+				if (!boton || !texto) return;
+				requestAnimationFrame(() => {
+					boton.disabled = true;
+					boton.textContent = texto;
+				});
+			});
+		</script>
+	</body>
+</html>

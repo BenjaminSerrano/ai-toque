@@ -1,0 +1,81 @@
+---
+import type { DatosReceta } from '../lib/db.ts';
+
+interface Props {
+	receta: DatosReceta;
+	accion: string;
+	boton: string;
+	cancelar: string;
+}
+
+const { receta, accion, boton, cancelar } = Astro.props;
+---
+
+<form method="post" action={accion} class="mt-10 grid gap-x-16 gap-y-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+	<div class="lg:col-span-2">
+		<label for="titulo" class="etiqueta">Nombre de la receta <span class="text-amarillo" aria-hidden="true">*</span></label>
+		<input id="titulo" name="titulo" required value={receta.titulo} class="campo tiza min-h-16 py-1 text-[2.75rem]" />
+	</div>
+
+	<div class="grid gap-6 sm:grid-cols-2 lg:col-span-2 lg:max-w-[calc(50%-2rem)]">
+		<div>
+			<label for="porciones" class="etiqueta">Porciones</label>
+			<input id="porciones" name="porciones" value={receta.porciones} placeholder="Ej.: 4 porciones" class="campo" />
+		</div>
+		<div>
+			<label for="tiempo" class="etiqueta">Tiempo</label>
+			<input id="tiempo" name="tiempo" value={receta.tiempo} placeholder="Ej.: 1 h 15 min" class="campo" />
+		</div>
+	</div>
+
+	<div>
+		<label for="ingredientes" class="etiqueta">Ingredientes</label>
+		<p id="ingredientes-ayuda" class="ayuda">
+			Uno por línea, con la cantidad primero. Una línea que termina en “:” es un subtítulo, como “Para la salsa:”.
+		</p>
+		<textarea id="ingredientes" name="ingredientes" aria-describedby="ingredientes-ayuda" class="campo">{receta.ingredientes}</textarea>
+		{
+			receta.original && (
+				<details class="mt-3">
+					<summary class="cursor-pointer py-1 text-base font-semibold text-tiza/80 hover:text-tiza">
+						Ver cómo venían antes de adaptarlos
+					</summary>
+					<ul class="mt-2 space-y-1 pl-5 text-base text-tiza/75 marker:text-tiza/40 list-disc">
+						{receta.original.split('\n').map((linea) => <li>{linea}</li>)}
+					</ul>
+				</details>
+			)
+		}
+	</div>
+
+	<div>
+		<label for="pasos" class="etiqueta">Preparación</label>
+		<p id="pasos-ayuda" class="ayuda">Un paso por línea. También acepta subtítulos que terminan en “:”.</p>
+		<textarea id="pasos" name="pasos" aria-describedby="pasos-ayuda" class="campo">{receta.pasos}</textarea>
+	</div>
+
+	<div>
+		<label for="notas" class="etiqueta">Notas</label>
+		<p id="notas-ayuda" class="ayuda">Tus cambios, trucos o qué tal quedó.</p>
+		<textarea id="notas" name="notas" aria-describedby="notas-ayuda" class="campo">{receta.notas}</textarea>
+	</div>
+
+	<fieldset class="grid content-start gap-5">
+		<legend class="etiqueta">De dónde viene</legend>
+		<div>
+			<label for="url" class="mb-1.5 block text-base text-tiza/80">Link de la receta</label>
+			<input id="url" name="url" type="url" value={receta.url} autocorrect="off" autocapitalize="none" spellcheck="false" class="campo text-base" />
+		</div>
+		<div>
+			<label for="imagen" class="mb-1.5 block text-base text-tiza/80">Link de la foto</label>
+			<input id="imagen" name="imagen" type="url" value={receta.imagen} autocorrect="off" autocapitalize="none" spellcheck="false" class="campo text-base" />
+		</div>
+	</fieldset>
+
+	<input type="hidden" name="original" value={receta.original} />
+
+	<div class="flex flex-wrap gap-3 border-t-2 border-dashed border-tiza/20 pt-8 lg:col-span-2">
+		<button type="submit" class="boton" data-espera="Guardando…">{boton}</button>
+		<a href={cancelar} class="boton-secundario">Cancelar</a>
+	</div>
+</form>

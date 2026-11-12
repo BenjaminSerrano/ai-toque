@@ -1,0 +1,47 @@
+---
+import Icono from '../../../components/Icono.astro';
+import RecetaForm from '../../../components/RecetaForm.astro';
+import Layout from '../../../layouts/Layout.astro';
+import { actualizarReceta, eliminarReceta, leerFormulario, obtenerReceta } from '../../../lib/db.ts';
+import { guardarImagenSiCaduca } from '../../../lib/importar.ts';
+
+const id = Number(Astro.params.id);
+
+if (Astro.request.method === 'POST') {
+	const form = await Astro.request.formData();
+	if (form.get('accion') === 'eliminar') {
+		eliminarReceta(id);
+		return Astro.redirect('/', 303);
+	}
+	const datos = leerFormulario(form);
+	datos.imagen = await guardarImagenSiCaduca(datos.imagen);
+	actualizarReceta(id, datos);
+	return Astro.redirect(`/recetas/${id}`, 303);
+}
+
+const receta = obtenerReceta(id);
+if (!receta) return Astro.rewrite('/404');
+const accion = `/recetas/${id}/editar`;
+---
+
+<Layout title={`Editar ${receta.titulo}`}>
+	<a href={`/recetas/${id}`} class="inline-flex items-center gap-2 py-2 font-semibold text-tiza/80 hover:text-tiza">
+		<Icono nombre="volver" />
+		Volver a la receta
+	</a>
+	<h1 class="tiza mt-4 text-[clamp(3.5rem,7vw,5.5rem)]">Editar receta</h1>
+
+	<RecetaForm receta={receta} accion={accion} boton="Guardar cambios" cancelar={`/recetas/${id}`} />
+
+	<details class="mt-14 max-w-xl rounded-2xl border-2 border-dashed border-coral/50">
+		<summary class="flex cursor-pointer items-center gap-3 p-5 font-semibold text-coral">
+			<Icono nombre="basura" />
+			Borrar esta receta de la pizarra
+		</summary>
+		<form method="post" action={accion} class="px-5 pb-6">
+			<input type="hidden" name="accion" value="eliminar" />
+			<p class="mb-5 text-tiza/85">Se borra para siempre del recetario, con sus notas.</p>
+			<button type="submit" class="boton-peligro">Sí, borrarla</button>
+		</form>
+	</details>
+</Layout>

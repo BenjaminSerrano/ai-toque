@@ -1,0 +1,154 @@
+---
+import Icono from '../components/Icono.astro';
+import Layout from '../layouts/Layout.astro';
+import { listarRecetas } from '../lib/db.ts';
+import { sitio } from '../lib/importar.ts';
+
+const consulta = Astro.url.searchParams.get('q')?.trim() ?? '';
+const recetas = listarRecetas(consulta);
+const total = consulta ? listarRecetas().length : recetas.length;
+const plural = (n: number, una: string, varias: string) => `${n} ${n === 1 ? una : varias}`;
+---
+
+<Layout>
+	<div class="grid gap-14 lg:grid-cols-[minmax(0,500px)_minmax(0,1fr)] lg:gap-20">
+		<section aria-labelledby="importar-titulo">
+			{/* 76 px es el máximo con que "te la dejo a la chilena" cabe en una línea de la columna (medido). */}
+			<h1 id="importar-titulo" class="tiza text-[clamp(3.75rem,7vw,4.75rem)]">
+				Pega el link,<br />te la dejo <span class="whitespace-nowrap">a la chilena</span>
+			</h1>
+			<p class="mt-4 max-w-[34ch] text-xl leading-relaxed text-tiza/80">
+				Ingredientes con nombres de acá y en tus medidas. La revisas antes de guardarla.
+			</p>
+
+			<form action="/nueva" method="get" class="mt-9">
+				<label for="url" class="etiqueta">Link de la receta</label>
+				<div class="flex flex-col gap-3 sm:flex-row">
+					<input
+						id="url"
+						name="url"
+						type="url"
+						required
+						placeholder="https://www.instagram.com/reel/…"
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="none"
+						spellcheck="false"
+						enterkeyhint="go"
+						class="campo min-h-16 text-xl"
+					/>
+					<button type="submit" class="boton min-h-16 shrink-0 px-8 text-xl" data-espera="Leyendo…">Importar</button>
+				</div>
+				<p class="mt-3 text-base text-tiza/75">
+					Sirve con páginas de recetas, YouTube e Instagram. ¿Tienes el texto?{' '}
+					<a href="/nueva#pegar" class="enlace">Pégalo aquí</a>.
+				</p>
+			</form>
+
+			<search class="mt-12 block">
+				<form action="/" method="get">
+					<label for="q" class="etiqueta">Buscar en el recetario</label>
+					<div class="flex gap-3">
+						<input
+							id="q"
+							name="q"
+							type="search"
+							value={consulta}
+							placeholder="palta, queque, pollo…"
+							autocorrect="off"
+							autocapitalize="none"
+							spellcheck="false"
+							enterkeyhint="search"
+							class="campo"
+						/>
+						<button type="submit" class="boton-secundario shrink-0 px-4" aria-label="Buscar">
+							<Icono nombre="lupa" class="size-6" />
+						</button>
+					</div>
+				</form>
+			</search>
+		</section>
+
+		<section
+			aria-labelledby="menu-titulo"
+			class="border-t-2 border-dashed border-tiza/20 pt-10 lg:border-t-0 lg:border-l-2 lg:pt-0 lg:pl-20"
+		>
+			<h2 id="menu-titulo" class="tiza text-center text-[clamp(3.5rem,6vw,4.75rem)]">Menú de la casa</h2>
+			<svg class="mx-auto mt-1 h-3 w-56 text-tiza/45" viewBox="0 0 224 12" preserveAspectRatio="none" aria-hidden="true">
+				<path d="M3 7c26-3 52-4 79-2s54 3 82 0 40-2 57 1" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+			</svg>
+			<p class="mt-2 text-center text-tiza/75">
+				{
+					consulta
+						? `${plural(recetas.length, 'receta', 'recetas')} con “${consulta}” de ${total}`
+						: plural(total, 'receta guardada', 'recetas guardadas')
+				}
+			</p>
+
+			{
+				recetas.length === 0 ? (
+					<div class="trazo mx-auto mt-10 max-w-md p-8 text-center">
+						{consulta ? (
+							<>
+								<p class="tiza text-4xl">No hay nada con “{consulta}”</p>
+								<p class="mt-3 text-tiza/80">Prueba con otro ingrediente o el nombre del plato.</p>
+								<a href="/" class="boton-secundario mt-6">Ver todo el menú</a>
+							</>
+						) : (
+							<>
+								<p class="tiza text-4xl">La pizarra está vacía</p>
+								<p class="mt-3 text-tiza/80">Pega el link de una receta y quedará anotada aquí.</p>
+							</>
+						)}
+					</div>
+				) : (
+					<ul class="mt-8">
+						{recetas.map((receta) => {
+							const detalle = [sitio(receta.url) ?? 'Escrita a mano', receta.porciones].filter(Boolean);
+							return (
+								<li>
+									<a
+										href={`/recetas/${receta.id}`}
+										class="group -mx-3 grid grid-cols-[4.75rem_minmax(0,1fr)] items-center gap-5 rounded-xl px-3 py-3.5 transition-colors hover:bg-pizarra-clara"
+									>
+										{receta.imagen ? (
+											<img
+												src={receta.imagen}
+												alt=""
+												loading="lazy"
+												referrerpolicy="no-referrer"
+												class="size-[4.75rem] rounded-lg bg-pizarra-clara object-cover"
+											/>
+										) : (
+											<span
+												class="tiza grid size-[4.75rem] place-items-center rounded-lg border-2 border-dashed border-tiza/30 text-5xl text-tiza/70"
+												aria-hidden="true"
+											>
+												{receta.titulo[0]?.toUpperCase()}
+											</span>
+										)}
+										<span class="min-w-0">
+											{/* En celular el título usa todo el ancho y los puntitos con el tiempo bajan a su propia línea. */}
+											<span class="flex flex-wrap items-baseline gap-x-3 sm:flex-nowrap">
+												<span class="tiza w-full min-w-0 text-[2.5rem] group-hover:underline group-hover:decoration-2 sm:w-auto">
+													{receta.titulo}
+												</span>
+												{receta.tiempo && (
+													<>
+														<span class="puntos" aria-hidden="true" />
+														<span class="shrink-0 text-xl font-semibold tabular-nums text-amarillo">{receta.tiempo}</span>
+													</>
+												)}
+											</span>
+											<span class="mt-1 block truncate text-base text-tiza/75">{detalle.join(' · ')}</span>
+										</span>
+									</a>
+								</li>
+							);
+						})}
+					</ul>
+				)
+			}
+		</section>
+	</div>
+</Layout>

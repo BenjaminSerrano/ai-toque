@@ -1,0 +1,131 @@
+---
+import Icono from '../components/Icono.astro';
+import RecetaForm from '../components/RecetaForm.astro';
+import Layout from '../layouts/Layout.astro';
+import { crearReceta, leerFormulario, recetaPorUrl } from '../lib/db.ts';
+import { desdeTexto, ErrorImportacion, guardarImagenSiCaduca, importarDesdeUrl, sitio, vacia } from '../lib/importar.ts';
+
+let receta = vacia();
+let aviso = '';
+let revisando = false;
+
+if (Astro.request.method === 'POST') {
+	const form = await Astro.request.formData();
+	if (form.get('accion') === 'leer') {
+		// Texto pegado: se lee, se adapta y se muestra para revisar (todavía no se guarda).
+		const opcional = (campo: string) => String(form.get(campo) ?? '').trim() || null;
+		const leida = desdeTexto(String(form.get('texto') ?? ''), { url: opcional('url'), imagen: opcional('imagen') });
+		receta = leida.receta;
+		aviso = leida.aviso ?? '';
+		revisando = true;
+	} else {
+		const datos = leerFormulario(form);
+		const existente = datos.url ? recetaPorUrl(datos.url) : undefined;
+		if (existente) return Astro.redirect(`/recetas/${existente.id}?ya=1`, 303);
+		datos.imagen = await guardarImagenSiCaduca(datos.imagen);
+		return Astro.redirect(`/recetas/${crearReceta(datos)}`, 303);
+	}
+}
+
+const url = Astro.url.searchParams.get('url')?.trim();
+if (url && !revisando) {
+	const existente = recetaPorUrl(url);
+	if (existente) return Astro.redirect(`/recetas/${existente.id}?ya=1`);
+
+	receta = vacia(url);
+	revisando = true;
+	if (!/^https?:\/\//i.test(url)) {
+		aviso = 'Ese link no parece válido. Debe empezar con https://';
+	} else {
+		try {
+			const importada = await importarDesdeUrl(url);
+			receta = importada.receta;
+			aviso = importada.aviso ?? '';
+		} catch (error) {
+			const motivo =
+				error instanceof ErrorImportacion
+					? error.message
+					: error instanceof Error && error.name === 'TimeoutError'
+						? 'Tardó demasiado en responder.'
+						: 'Revisa que el link esté bien.';
+			aviso = `No pude abrir el link. ${motivo} Puedes pegar el texto o escribirla a mano.`;
+		}
+	}
+}
+
+const ofrecerPegar = !revisando || Boolean(aviso);
+const origen = sitio(receta.url);
+---
+
+<Layout title={revisando ? 'Revisar receta' : 'Escribir una receta'}>
+	<div class="max-w-3xl">
+		<h1 class="tiza text-[clamp(3.5rem,7vw,5.5rem)]">{revisando ? 'Revisa la receta' : 'Escribir una receta'}</h1>
+		{
+			!aviso && revisando && (
+				<p class="mt-4 text-xl leading-relaxed text-tiza/80">
+					Así quedó adaptada{origen && ` desde ${origen}`}. Corrige lo que quieras antes de guardarla.
+				</p>
+			)
+		}
+		{
+			!revisando && (
+				<p class="mt-4 text-xl leading-relaxed text-tiza/80">
+					Escríbela directo o pega el texto de donde la tengas: la ordeno en ingredientes y pasos.
+				</p>
+			)
+		}
+		{
+			aviso && (
+				<p role="status" class="aviso mt-6">
+					<Icono nombre="info" class="mt-0.5 size-6 shrink-0 text-celeste" />
+					<span class="min-w-0 break-words">
+						{aviso.split(/(https?:\/\/\S+?)(?=[,.]?(?:\s|$))/).map((parte) =>
+							/^https?:\/\//.test(parte) ? (
+								<a href={parte} class="enlace" target="_blank" rel="noreferrer">
+									{parte}
+								</a>
+							) : (
+								parte
+							),
+						)}
+					</span>
+				</p>
+			)
+		}
+	</div>
+
+	{
+		ofrecerPegar && (
+			<details id="pegar" open={Boolean(aviso) || undefined} class="trazo group mt-8 max-w-3xl">
+				<summary class="flex cursor-pointer items-center gap-3 p-5 text-xl font-semibold">
+					<Icono nombre="pegar" class="size-6 text-tiza/80" />
+					Pegar el texto de la receta
+				</summary>
+				<form method="post" action="/nueva" class="px-5 pb-6">
+					<input type="hidden" name="accion" value="leer" />
+					<input type="hidden" name="url" value={receta.url} />
+					<input type="hidden" name="imagen" value={receta.imagen} />
+					<label for="texto" class="etiqueta">Texto de la receta</label>
+					<p id="texto-ayuda" class="ayuda">
+						La descripción del video o del post, o cualquier receta escrita. Busco “Ingredientes” y “Preparación”.
+					</p>
+					<textarea id="texto" name="texto" required aria-describedby="texto-ayuda" class="campo" />
+					<button type="submit" class="boton-secundario mt-4" data-espera="Leyendo…">Leer y adaptar</button>
+				</form>
+			</details>
+		)
+	}
+
+	<RecetaForm receta={receta} accion="/nueva" boton="Guardar en el recetario" cancelar="/" />
+</Layout>
+
+<script>
+	// Si llegan con #pegar, abrir la caja de texto y llevar el foco al campo.
+	if (location.hash === '#pegar') {
+		const caja = document.querySelector<HTMLDetailsElement>('#pegar');
+		if (caja) {
+			caja.open = true;
+			caja.querySelector('textarea')?.focus();
+		}
+	}
+</script>

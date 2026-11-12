@@ -1,0 +1,379 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-12T20:34:59.340115+00:00",
+  "title": "Design System: AI toque",
+  "extensions": {
+    "colorMeta": {
+      "pizarra": {
+        "role": "neutral",
+        "displayName": "Pizarra",
+        "canonical": "#1e2a24",
+        "tonalRamp": [
+          "#1c211f",
+          "#323e38",
+          "#495f54",
+          "#618573",
+          "#81a291",
+          "#a6bab0",
+          "#c9d4cf",
+          "#ecefed"
+        ]
+      },
+      "pizarra-honda": {
+        "role": "neutral",
+        "displayName": "Pizarra honda",
+        "canonical": "#16201b",
+        "tonalRamp": [
+          "#1c221f",
+          "#313f38",
+          "#486154",
+          "#5f8773",
+          "#7fa491",
+          "#a5bbb0",
+          "#c9d4cf",
+          "#ecefed"
+        ]
+      },
+      "pizarra-clara": {
+        "role": "neutral",
+        "displayName": "Pizarra clara",
+        "canonical": "#283830",
+        "tonalRamp": [
+          "#1c211f",
+          "#323e38",
+          "#495f54",
+          "#618573",
+          "#81a291",
+          "#a6bab0",
+          "#c9d4cf",
+          "#ecefed"
+        ]
+      },
+      "tiza": {
+        "role": "neutral",
+        "displayName": "Tiza hueso",
+        "canonical": "#f2efe6",
+        "tonalRamp": [
+          "#242119",
+          "#443e2c",
+          "#695f3f",
+          "#958451",
+          "#b1a172",
+          "#c3ba9d",
+          "#d8d3c5",
+          "#f0efea"
+        ]
+      },
+      "amarillo": {
+        "role": "primary",
+        "displayName": "Tiza amarilla",
+        "canonical": "#f6c945",
+        "tonalRamp": [
+          "#2e260f",
+          "#5a4916",
+          "#917217",
+          "#d5a311",
+          "#edbe36",
+          "#e7cb79",
+          "#eadcb3",
+          "#f5f1e5"
+        ]
+      },
+      "amarillo-claro": {
+        "role": "primary",
+        "displayName": "Tiza amarilla encendida",
+        "canonical": "#ffd968",
+        "tonalRamp": [
+          "#2f270e",
+          "#5d4b13",
+          "#977511",
+          "#dfa807",
+          "#f6c32d",
+          "#edce73",
+          "#eddeb0",
+          "#f6f1e5"
+        ]
+      },
+      "naranja": {
+        "role": "secondary",
+        "displayName": "Tiza naranja",
+        "canonical": "#f2914a",
+        "tonalRamp": [
+          "#2d1c10",
+          "#583318",
+          "#8e4b1a",
+          "#d06415",
+          "#e8843a",
+          "#e5a87b",
+          "#e9cab4",
+          "#f5ece6"
+        ]
+      },
+      "celeste": {
+        "role": "tertiary",
+        "displayName": "Tiza celeste",
+        "canonical": "#86c9da",
+        "tonalRamp": [
+          "#162427",
+          "#24444c",
+          "#316978",
+          "#3995ac",
+          "#5cb1c7",
+          "#90c3d0",
+          "#bed8df",
+          "#e9f0f2"
+        ]
+      },
+      "coral": {
+        "role": "tertiary",
+        "displayName": "Tiza coral",
+        "canonical": "#f28b7a",
+        "tonalRamp": [
+          "#2c1511",
+          "#572219",
+          "#8b2d1d",
+          "#cb331a",
+          "#e4563f",
+          "#e28c7e",
+          "#e8bdb6",
+          "#f4e8e6"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Títulos de página y de receta."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Números de paso, monumentales y legibles a un brazo de distancia."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Encabezados de sección (Ingredientes, Preparación)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Nombres de receta en la lista Menú de la casa."
+      },
+      "body-lectura": {
+        "displayName": "Body lectura",
+        "purpose": "Pasos, notas, bajadas e ingredientes."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Base del documento y de los campos."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Etiquetas, navegación y botones."
+      },
+      "cantidad": {
+        "displayName": "Cantidad",
+        "purpose": "Columna de cantidades y tiempos, tabular y a la derecha."
+      },
+      "small": {
+        "displayName": "Small",
+        "purpose": "Ayudas, metadatos y texto de apoyo al 75 %."
+      }
+    },
+    "shadows": [],
+    "surface": [
+      {
+        "name": "polvo-de-tiza",
+        "value": "fractalNoise SVG (baseFrequency .85, 2 octavas) blanco al 6 % sobre --color-pizarra",
+        "purpose": "Única textura de superficie: la pizarra se siente pizarra y no pantalla plana."
+      }
+    ],
+    "strokes": [
+      {
+        "name": "trazo-continuo",
+        "value": "2px solid rgb(242 239 230 / .4–.7)",
+        "purpose": "Campos y botón secundario."
+      },
+      {
+        "name": "trazo-discontinuo",
+        "value": "2px dashed rgb(242 239 230 / .2–.3)",
+        "purpose": "Contenedores secundarios, separadores de columnas, estados vacíos."
+      },
+      {
+        "name": "puntos",
+        "value": "3px dotted rgb(242 239 230 / .42)",
+        "purpose": "Solo los puntitos del menú entre nombre y valor."
+      },
+      {
+        "name": "foco",
+        "value": "outline 3px solid #f6c945, offset 3px",
+        "purpose": "Anillo de foco global."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-tiza",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Curva de toda transición de estado (casillas, tachado)."
+      },
+      {
+        "name": "tachado",
+        "value": "260ms",
+        "purpose": "El trazo amarillo que tacha al marcar; se desactiva con prefers-reduced-motion."
+      },
+      {
+        "name": "casilla",
+        "value": "150ms",
+        "purpose": "Relleno amarillo de la casilla al marcar."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón principal",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "La acción que avanza; uno por pantalla.",
+      "html": "<button class=\"ds-boton\">Importar</button>",
+      "css": ".ds-boton{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;padding:0 24px;border:0;border-radius:8px;background:var(--color-amarillo,#f6c945);color:var(--color-pizarra,#1e2a24);font:700 1.125rem/1.55 'Atkinson Hyperlegible Next',sans-serif;cursor:pointer;transition:background-color 150ms;}.ds-boton:hover{background:var(--color-amarillo-claro,#ffd968);}.ds-boton:focus-visible{outline:3px solid var(--color-amarillo,#f6c945);outline-offset:3px;}.ds-boton:disabled{opacity:.7;cursor:wait;}"
+    },
+    {
+      "name": "Botón secundario",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Editar, Cancelar, Buscar y acciones alternativas.",
+      "html": "<button class=\"ds-boton-sec\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20h4L19 9l-4-4L4 16v4Z\"/><path d=\"m13.5 6.5 4 4\"/></svg>Editar</button>",
+      "css": ".ds-boton-sec{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:56px;padding:0 24px;border:2px solid rgb(242 239 230 / .7);border-radius:8px;background:transparent;color:var(--color-tiza,#f2efe6);font:600 1.125rem/1.55 'Atkinson Hyperlegible Next',sans-serif;cursor:pointer;transition:background-color 150ms,border-color 150ms;}.ds-boton-sec:hover{border-color:#f2efe6;background:rgb(242 239 230 / .1);}.ds-boton-sec:focus-visible{outline:3px solid #f6c945;outline-offset:3px;}"
+    },
+    {
+      "name": "Botón peligro",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Solo en la confirmación de borrar una receta.",
+      "html": "<button class=\"ds-boton-peligro\">Sí, borrarla</button>",
+      "css": ".ds-boton-peligro{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:0 24px;border:0;border-radius:8px;background:var(--color-coral,#f28b7a);color:var(--color-pizarra,#1e2a24);font:700 1.125rem/1.55 'Atkinson Hyperlegible Next',sans-serif;cursor:pointer;transition:background-color 150ms;}.ds-boton-peligro:hover{background:#f7a093;}.ds-boton-peligro:focus-visible{outline:3px solid #f6c945;outline-offset:3px;}"
+    },
+    {
+      "name": "Campo",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de texto sobre pizarra honda con borde de tiza.",
+      "html": "<label class=\"ds-etiqueta\" for=\"ds-q\">Buscar en el recetario</label><input id=\"ds-q\" class=\"ds-campo\" placeholder=\"palta, queque, pollo…\">",
+      "css": ".ds-etiqueta{display:block;margin-bottom:6px;color:#f2efe6;font:600 1.125rem/1.55 'Atkinson Hyperlegible Next',sans-serif;}.ds-campo{box-sizing:border-box;width:100%;padding:12px 16px;border:2px solid rgb(242 239 230 / .4);border-radius:8px;background:var(--color-pizarra-honda,#16201b);color:#f2efe6;caret-color:#f6c945;font:400 1.125rem/1.55 'Atkinson Hyperlegible Next',sans-serif;transition:border-color 150ms;}.ds-campo::placeholder{color:rgb(242 239 230 / .6);}.ds-campo:hover{border-color:rgb(242 239 230 / .6);}.ds-campo:focus-visible{border-color:#f2efe6;outline:3px solid #f6c945;outline-offset:3px;}"
+    },
+    {
+      "name": "Barra de navegación",
+      "kind": "nav",
+      "refersTo": "nav",
+      "description": "Logo en tiza con la I naranja; sección actual subrayada en amarillo.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" class=\"ds-logo\">A<span>I</span> toque</a><div class=\"ds-nav-links\"><a href=\"#\" class=\"ds-nav-link ds-actual\">Recetario</a><a href=\"#\" class=\"ds-nav-link\">Escribir una receta</a></div></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 32px;border-bottom:2px solid rgb(242 239 230 / .15);background:#1e2a24;}.ds-logo{font:700 3.75rem/1 'Amatic SC',sans-serif;letter-spacing:.01em;color:#f2efe6;text-decoration:none;}.ds-logo span{color:var(--color-naranja,#f2914a);}.ds-nav-links{display:flex;gap:24px;}.ds-nav-link{padding:8px;border-radius:6px;color:#f2efe6;font:600 1.125rem/1.55 'Atkinson Hyperlegible Next',sans-serif;text-decoration:none;text-decoration-color:#f6c945;text-decoration-thickness:3px;text-underline-offset:10px;}.ds-nav-link:hover,.ds-nav-link.ds-actual{text-decoration-line:underline;}.ds-nav-link:focus-visible{outline:3px solid #f6c945;outline-offset:3px;}"
+    },
+    {
+      "name": "Aviso",
+      "kind": "card",
+      "refersTo": "aviso",
+      "description": "Mensaje informativo con borde discontinuo celeste.",
+      "html": "<p class=\"ds-aviso\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#86c9da\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 11v5\"/><path d=\"M12 8h.01\"/></svg>Ya tenías esta receta en el recetario.</p>",
+      "css": ".ds-aviso{display:flex;gap:12px;margin:0;padding:16px;border:2px dashed rgb(134 201 218 / .7);border-radius:12px;background:#1e2a24;color:#f2efe6;font:400 1.125rem/1.55 'Atkinson Hyperlegible Next',sans-serif;}.ds-aviso svg{flex-shrink:0;}"
+    },
+    {
+      "name": "Fila del menú",
+      "kind": "custom",
+      "refersTo": "recipe-row-hover",
+      "description": "Receta en 'Menú de la casa': miniatura, nombre en tiza, puntitos y tiempo amarillo.",
+      "html": "<a href=\"#\" class=\"ds-fila\"><span class=\"ds-mini\">C</span><span class=\"ds-fila-txt\"><span class=\"ds-fila-linea\"><span class=\"ds-fila-nombre\">Calzones rotos</span><span class=\"ds-puntos\"></span><span class=\"ds-tiempo\">45 min</span></span><span class=\"ds-fila-meta\">cocinachilena.cl · 30 porciones</span></span></a>",
+      "css": ".ds-fila{display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:20px;padding:14px 12px;border-radius:12px;background:#1e2a24;color:#f2efe6;text-decoration:none;transition:background-color 150ms;}.ds-fila:hover{background:var(--color-pizarra-clara,#283830);}.ds-fila:hover .ds-fila-nombre{text-decoration:underline;text-decoration-thickness:2px;}.ds-fila:focus-visible{outline:3px solid #f6c945;outline-offset:3px;}.ds-mini{display:grid;place-items:center;width:76px;height:76px;border:2px dashed rgb(242 239 230 / .3);border-radius:8px;font:700 3rem/1 'Amatic SC',sans-serif;color:rgb(242 239 230 / .7);}.ds-fila-linea{display:flex;align-items:baseline;gap:12px;}.ds-fila-nombre{font:700 2.5rem/.95 'Amatic SC',sans-serif;letter-spacing:.01em;}.ds-puntos{flex:1 1 24px;min-width:24px;border-bottom:3px dotted rgb(242 239 230 / .42);transform:translateY(-.32em);}.ds-tiempo{flex-shrink:0;color:#f6c945;font:600 1.25rem/1.4 'Atkinson Hyperlegible Next',sans-serif;font-variant-numeric:tabular-nums;}.ds-fila-meta{display:block;margin-top:4px;color:rgb(242 239 230 / .75);font:400 1rem/1.5 'Atkinson Hyperlegible Next',sans-serif;}"
+    },
+    {
+      "name": "Ingrediente marcable",
+      "kind": "custom",
+      "refersTo": "checkbox",
+      "description": "Ingrediente con puntitos y cantidad; al marcarlo, un trazo de tiza amarilla lo tacha.",
+      "html": "<label class=\"ds-ing\"><input type=\"checkbox\" checked><span class=\"ds-ing-linea\"><span class=\"ds-tachable\">Harina sin polvos de hornear</span><span class=\"ds-puntos\"></span><span class=\"ds-cant\"><span class=\"ds-tachable\">3 tazas</span></span></span></label><label class=\"ds-ing\"><input type=\"checkbox\"><span class=\"ds-ing-linea\"><span class=\"ds-tachable\">Mantequilla blanda</span><span class=\"ds-puntos\"></span><span class=\"ds-cant\"><span class=\"ds-tachable\">60 g</span></span></span></label>",
+      "css": ".ds-ing{display:flex;align-items:flex-start;gap:16px;padding:10px 0;background:#1e2a24;color:#f2efe6;cursor:pointer;font:400 1.25rem/1.375 'Atkinson Hyperlegible Next',sans-serif;}.ds-ing input{appearance:none;flex-shrink:0;width:26px;height:26px;margin:4px 0 0;border:2px solid rgb(242 239 230 / .75);border-radius:6px;background:transparent center/80% no-repeat;cursor:pointer;transition:background-color 150ms cubic-bezier(.16,1,.3,1),border-color 150ms cubic-bezier(.16,1,.3,1);}.ds-ing input:checked{border-color:#f6c945;background-color:#f6c945;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e2a24' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E\");}.ds-ing input:focus-visible{outline:3px solid #f6c945;outline-offset:3px;}.ds-ing-linea{display:flex;flex:1;min-width:0;align-items:baseline;gap:12px;}.ds-puntos{flex:1 1 24px;min-width:24px;border-bottom:3px dotted rgb(242 239 230 / .42);transform:translateY(-.32em);}.ds-cant{flex-shrink:0;max-width:45%;text-align:right;font-weight:600;font-variant-numeric:tabular-nums;}.ds-tachable{background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'%3E%3Cpath d='M1.5 6.2C14 4.6 27 5.8 40 5.1s26-1.4 39-.3 25 1.3 39.5-.4' fill='none' stroke='%23f6c945' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:0 60%;background-size:0% .42em;transition:background-size 260ms cubic-bezier(.16,1,.3,1),color 260ms cubic-bezier(.16,1,.3,1);}.ds-ing:has(input:checked) .ds-tachable{background-size:100% .42em;color:rgb(242 239 230 / .62);}@media (prefers-reduced-motion:reduce){.ds-tachable,.ds-ing input{transition:none;}}"
+    },
+    {
+      "name": "Paso numerado",
+      "kind": "custom",
+      "refersTo": "numeral",
+      "description": "Número monumental en tiza; el paso en curso lo lleva en amarillo.",
+      "html": "<label class=\"ds-paso ds-en-curso\"><span class=\"ds-num\">2</span><span class=\"ds-paso-txt\">Agregar la mantequilla, huevos y pisco; mezclar hasta formar una masa firme.</span><span class=\"ds-listo\"><input type=\"checkbox\"> Listo</span></label>",
+      "css": ".ds-paso{display:grid;grid-template-columns:80px minmax(0,1fr);column-gap:20px;padding:16px 0;background:#1e2a24;color:#f2efe6;cursor:pointer;}.ds-num{grid-row:span 2;text-align:right;font:700 6rem/.8 'Amatic SC',sans-serif;font-variant-numeric:tabular-nums;color:rgb(242 239 230 / .9);transition:color 150ms;}.ds-en-curso .ds-num{color:#f6c945;}.ds-paso-txt{max-width:62ch;font:400 1.25rem/1.625 'Atkinson Hyperlegible Next',sans-serif;}.ds-listo{display:flex;align-items:center;gap:8px;margin-top:12px;color:rgb(242 239 230 / .75);font:400 1rem/1.5 'Atkinson Hyperlegible Next',sans-serif;}.ds-listo input{appearance:none;width:24px;height:24px;margin:0;border:2px solid rgb(242 239 230 / .75);border-radius:6px;}.ds-listo input:checked{background:#f6c945;border-color:#f6c945;}.ds-listo input:focus-visible{outline:3px solid #f6c945;outline-offset:3px;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La pizarra de la picada",
+    "overview": "**Creative North Star: \"La pizarra de la picada\"**\n\nEl recetario se escribe como el menú del día con tiza en la pizarra de una picada chilena: fondo verde casi negro con un polvillo de tiza apenas visible, letra de tiza condensada para todo lo que se anuncia (títulos, nombres de platos, números de paso) y una letra de lectura muy clara para todo lo que se sigue con las manos ocupadas. Cada línea de ingrediente se lee como un plato con su precio: el nombre a la izquierda, la cantidad a la derecha en cifras tabulares, unidos por una fila de puntitos.\n\nLa densidad es baja y la escala grande, porque el uso real es un celular a un brazo de distancia en la cocina: texto de lectura de 20 px, áreas táctiles de 56 px o más, números de paso monumentales. El color es escaso y tiene trabajo asignado: tiza hueso para casi todo, tiza amarilla solo para lo activo y la acción principal, naranja solo para la I del logo y los enlaces, celeste para avisos, coral para borrar. Las fotos de las recetas son lo único a todo color en la pantalla.\n\nLa profundidad no existe como sombra: la pizarra es plana y lo que la organiza son trazos de tiza (bordes punteados y discontinuos translúcidos) y un tono de pizarra más hondo o más claro. La interacción distintiva es el tachado: al marcar un ingrediente o un paso, un trazo amarillo algo irregular lo cruza.",
+    "keyCharacteristics": [
+      "Pizarra verde casi negra plana, con ruido de polvo de tiza al 6 % de opacidad.",
+      "Letra de tiza (Amatic SC 700) para anunciar; Atkinson Hyperlegible Next para leer y operar.",
+      "Filas \"nombre · puntitos · cantidad\" como módulo único de listas.",
+      "Amarillo reservado a lo activo: acción principal, casilla marcada, tachado, paso en curso, foco.",
+      "Separadores y contenedores dibujados con trazo discontinuo de tiza, nunca con sombra.",
+      "Íconos de un solo trazo (24 × 24, línea de 2 px, puntas redondas), dibujados para el proyecto."
+    ],
+    "rules": [
+      {
+        "name": "The Tiza Amarilla Rule",
+        "body": "El amarillo marca lo que está activo o es la acción principal, y nada más. Si un elemento amarillo no es \"lo que haces ahora\" o \"lo que ya hiciste mientras cocinas\", no es amarillo.",
+        "section": "colors"
+      },
+      {
+        "name": "The Una Tiza Un Trabajo Rule",
+        "body": "Naranja = la I y los enlaces; celeste = avisos; coral = borrar. Ningún color de tiza cambia de trabajo ni se usa como decoración.",
+        "section": "colors"
+      },
+      {
+        "name": "The Foto a Color Rule",
+        "body": "Las fotos de las recetas son lo único a todo color. Ningún fondo, ilustración ni bloque de color compite con ellas.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tiza Anuncia Rule",
+        "body": "Amatic SC se usa para títulos, nombres de recetas, números de paso y el logo; nunca para párrafos, etiquetas, botones ni cantidades.",
+        "section": "typography"
+      },
+      {
+        "name": "The Cifras en Columna Rule",
+        "body": "Toda cantidad o tiempo va en `tabular-nums`, a la derecha, en su propia columna; las fracciones se escriben como caracteres reales (½, ¼, 1 ½).",
+        "section": "typography"
+      },
+      {
+        "name": "The Menú Rule",
+        "body": "Toda lista que empareja un nombre con un valor (ingrediente y cantidad, receta y tiempo) usa el mismo módulo: nombre a la izquierda, puntitos que crecen para llenar (mínimo 24 px) y valor a la derecha. En celular, si el nombre no cabe, ocupa todo el ancho y los puntitos con el valor bajan a su línea.",
+        "section": "layout"
+      },
+      {
+        "name": "The Pizarra Plana Rule",
+        "body": "Ningún elemento flota: ni sombras, ni desenfoques, ni degradados. Si algo necesita separarse, se le dibuja un trazo de tiza o se cambia el tono de pizarra.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** escribir títulos, nombres de recetas y números de paso en Amatic SC 700, y todo lo demás en Atkinson Hyperlegible Next.",
+      "**Do** usar el módulo nombre · puntitos · valor para toda pareja nombre/cantidad, con el valor en `tabular-nums` a la derecha.",
+      "**Do** reservar el amarillo para lo activo: acción principal, casilla marcada, tachado, paso en curso, foco y sección actual.",
+      "**Do** mantener áreas táctiles de 56 px o más en botones y texto de lectura de 1.25rem en todo lo que se sigue mientras se cocina.",
+      "**Do** separar y contener con trazos de tiza de 2 px (continuos, discontinuos o punteados según su uso) y con los tonos de pizarra.",
+      "**Do** desactivar transiciones con `prefers-reduced-motion: reduce`.",
+      "**Do** dibujar íconos nuevos con un solo trazo de 2 px en 24 × 24."
+    ],
+    "donts": [
+      "**Don't** usar sombras, desenfoques ni degradados; la pizarra es plana.",
+      "**Don't** usar fondos blancos ni tarjetas claras con foto en grilla: el recetario es una pizarra, no una galería.",
+      "**Don't** usar naranja, celeste o coral fuera de su trabajo, ni introducir colores nuevos que compitan con las fotos.",
+      "**Don't** poner párrafos, etiquetas, botones ni cantidades en letra de tiza.",
+      "**Don't** reemplazar la I naranja del logo ni escribir el nombre sin ella.",
+      "**Don't** usar la línea punteada para nada que no sea unir un nombre con su valor."
+    ]
+  }
+}

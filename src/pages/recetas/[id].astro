@@ -1,0 +1,237 @@
+---
+import Icono from '../../components/Icono.astro';
+import Layout from '../../layouts/Layout.astro';
+import { obtenerReceta } from '../../lib/db.ts';
+import { agrupar, separarCantidad } from '../../lib/formato.ts';
+import { sitio as nombreSitio } from '../../lib/importar.ts';
+
+const id = Number(Astro.params.id);
+const receta = obtenerReceta(id);
+if (!receta) return Astro.rewrite('/404');
+
+const ingredientes = agrupar(receta.ingredientes);
+const pasos = agrupar(receta.pasos);
+const sitio = nombreSitio(receta.url);
+const yaGuardada = Astro.url.searchParams.has('ya');
+let numero = 0;
+---
+
+<Layout title={receta.titulo}>
+	<a href="/" class="inline-flex items-center gap-2 py-2 font-semibold text-tiza/80 hover:text-tiza">
+		<Icono nombre="volver" />
+		Menú de la casa
+	</a>
+
+	{
+		yaGuardada && (
+			<p role="status" class="aviso mt-4">
+				<Icono nombre="info" class="mt-0.5 size-6 shrink-0 text-celeste" />
+				Ya tenías esta receta en el recetario.
+			</p>
+		)
+	}
+
+	<article class="mt-6" data-receta={id}>
+		<header class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-end">
+			<div>
+				<h1 class="tiza text-[clamp(3.5rem,8vw,6rem)]">{receta.titulo}</h1>
+				<ul class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-tiza/85">
+					{
+						receta.porciones && (
+							<li class="flex items-center gap-2">
+								<Icono nombre="porciones" class="size-5 text-tiza/70" />
+								{receta.porciones}
+							</li>
+						)
+					}
+					{
+						receta.tiempo && (
+							<li class="flex items-center gap-2">
+								<Icono nombre="reloj" class="size-5 text-tiza/70" />
+								{receta.tiempo}
+							</li>
+						)
+					}
+					{
+						sitio && (
+							<li>
+								<a href={receta.url} class="enlace inline-flex items-center gap-1.5" rel="noreferrer">
+									{sitio}
+									<Icono nombre="externo" class="size-4" />
+								</a>
+							</li>
+						)
+					}
+				</ul>
+				<a href={`/recetas/${id}/editar`} class="boton-secundario mt-7">
+					<Icono nombre="lapiz" />
+					Editar
+				</a>
+			</div>
+			{
+				receta.imagen && (
+					<img
+						src={receta.imagen}
+						alt=""
+						referrerpolicy="no-referrer"
+						class="aspect-[4/3] w-full rounded-2xl bg-pizarra-clara object-cover sm:aspect-[16/10]"
+					/>
+				)
+			}
+		</header>
+
+		<div class="mt-14 grid grid-cols-[minmax(0,1fr)] gap-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-20">
+			<section
+				aria-labelledby="ingredientes-titulo"
+				class="lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-2"
+			>
+				<h2 id="ingredientes-titulo" class="tiza text-6xl">Ingredientes</h2>
+				{
+					ingredientes.length === 0 && (
+						<p class="mt-4 text-tiza/75">
+							Sin ingredientes anotados. <a href={`/recetas/${id}/editar`} class="enlace">Agrégalos</a>.
+						</p>
+					)
+				}
+				{
+					ingredientes.map((grupo) => (
+						<>
+							{grupo.titulo && <h3 class="tiza mt-8 text-4xl text-tiza/90">{grupo.titulo}</h3>}
+							<ul class="mt-3">
+								{grupo.lineas.map((linea) => {
+									const { nombre, cantidad } = separarCantidad(linea);
+									return (
+										<li>
+											<label class="marcable flex cursor-pointer items-start gap-4 py-2.5">
+												<input type="checkbox" class="mt-1" />
+												<span class="flex min-w-0 flex-1 items-baseline gap-3 text-xl leading-snug">
+													<span class="min-w-0">
+														<span class="tachable">{nombre}</span>
+													</span>
+													{cantidad && (
+														<>
+															<span class="puntos" aria-hidden="true" />
+															<span class="max-w-[45%] shrink-0 text-right font-semibold tabular-nums">
+																<span class="tachable">{cantidad}</span>
+															</span>
+														</>
+													)}
+												</span>
+											</label>
+										</li>
+									);
+								})}
+							</ul>
+						</>
+					))
+				}
+			</section>
+
+			<section aria-labelledby="pasos-titulo">
+				<div class="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+					<h2 id="pasos-titulo" class="tiza text-6xl">Preparación</h2>
+					<button type="button" data-desmarcar class="hidden items-center gap-2 py-2 text-base font-semibold whitespace-nowrap text-tiza/80 hover:text-tiza">
+						<Icono nombre="borrar" class="size-4" />
+						Desmarcar todo
+					</button>
+				</div>
+				{
+					pasos.length === 0 && (
+						<p class="mt-4 text-tiza/75">
+							Sin pasos anotados. <a href={`/recetas/${id}/editar`} class="enlace">Agrégalos</a>.
+						</p>
+					)
+				}
+				{
+					pasos.map((grupo) => (
+						<>
+							{grupo.titulo && <h3 class="tiza mt-8 text-4xl text-tiza/90">{grupo.titulo}</h3>}
+							<ol class="mt-3" start={numero + 1}>
+								{grupo.lineas.map((linea) => {
+									numero += 1;
+									return (
+										<li class="paso">
+											<label class="marcable grid cursor-pointer grid-cols-[3.75rem_minmax(0,1fr)] gap-x-4 py-4 sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-x-5">
+												<span
+													class="numero tiza row-span-2 text-right text-[5rem] leading-[0.8] text-tiza/90 tabular-nums transition-colors sm:text-[6rem]"
+													aria-hidden="true"
+												>
+													{numero}
+												</span>
+												<span class="max-w-[62ch] text-xl leading-relaxed">
+													<span class="tachable">{linea}</span>
+												</span>
+												<span class="mt-3 flex items-center gap-2 text-base text-tiza/75">
+													<input type="checkbox" class="size-6" />
+													Listo
+												</span>
+											</label>
+										</li>
+									);
+								})}
+							</ol>
+						</>
+					))
+				}
+			</section>
+		</div>
+
+		{
+			receta.notas && (
+				<section aria-labelledby="notas-titulo" class="trazo mt-16 max-w-3xl p-6 sm:p-8">
+					<h2 id="notas-titulo" class="tiza text-5xl">Notas</h2>
+					<p class="mt-3 whitespace-pre-line text-xl leading-relaxed">{receta.notas}</p>
+				</section>
+			)
+		}
+	</article>
+</Layout>
+
+<style>
+	/* El paso en curso (el primero sin marcar) lleva el número en tiza amarilla. */
+	.paso[data-en-curso] .numero {
+		color: var(--color-amarillo);
+	}
+</style>
+
+<script>
+	// Recuerda lo marcado mientras dure la sesión (si el celular se bloquea, no se pierde)
+	// y señala el paso en curso.
+	const articulo = document.querySelector<HTMLElement>('[data-receta]');
+	if (articulo) {
+		const clave = `ai-toque:marcas:${articulo.dataset.receta}`;
+		const casillas = [...articulo.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')];
+		const desmarcar = document.querySelector<HTMLButtonElement>('[data-desmarcar]');
+
+		const leer = (): boolean[] => {
+			try {
+				return JSON.parse(sessionStorage.getItem(clave) ?? '[]');
+			} catch {
+				return [];
+			}
+		};
+		const actualizar = () => {
+			const pasos = [...articulo.querySelectorAll<HTMLElement>('.paso')];
+			const enCurso = pasos.find((paso) => !paso.querySelector('input')?.checked);
+			for (const paso of pasos) paso.toggleAttribute('data-en-curso', paso === enCurso);
+			const alguna = casillas.some((c) => c.checked);
+			desmarcar?.classList.toggle('hidden', !alguna);
+			desmarcar?.classList.toggle('inline-flex', alguna);
+			try {
+				sessionStorage.setItem(clave, JSON.stringify(casillas.map((c) => c.checked)));
+			} catch {
+				// Sin almacenamiento disponible: las marcas solo duran hasta recargar.
+			}
+		};
+
+		leer().forEach((marcada, i) => {
+			if (casillas[i]) casillas[i].checked = marcada;
+		});
+		articulo.addEventListener('change', actualizar);
+		desmarcar?.addEventListener('click', () => {
+			for (const casilla of casillas) casilla.checked = false;
+			actualizar();
+		});
+		actualizar();
+	}
+</script>
