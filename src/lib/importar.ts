@@ -33,7 +33,29 @@ async function descargar(url: string, cabeceras: Record<string, string> = {}): P
 		throw error;
 	}
 	if (!respuesta.ok) throw new ErrorImportacion(`La página respondió con error ${respuesta.status}.`);
-	return respuesta.text();
+	return leerConLimite(respuesta);
+}
+
+/** Una página de recetas pesa unos cientos de KB; más de 5 MB no vale la pena procesarlo. */
+const MAXIMO_PAGINA = 5 * 1024 * 1024;
+
+async function leerConLimite(respuesta: Awaited<ReturnType<typeof pedir>>): Promise<string> {
+	if (!respuesta.body) return '';
+	const lector = respuesta.body.getReader();
+	const decodificador = new TextDecoder();
+	let texto = '';
+	let leidos = 0;
+	for (;;) {
+		const { done, value } = await lector.read();
+		if (done) break;
+		leidos += value.byteLength;
+		if (leidos > MAXIMO_PAGINA) {
+			await lector.cancel();
+			break;
+		}
+		texto += decodificador.decode(value, { stream: true });
+	}
+	return texto + decodificador.decode();
 }
 
 export function importarDesdeUrl(url: string): Promise<Importacion> {
@@ -82,11 +104,36 @@ export function recetaDesdeHtml(html: string, url: string): Importacion {
 
 /** El texto que se ve en la página, una línea por bloque, sin scripts, estilos ni navegación. */
 function textoVisible(html: string): string {
-	const sinCodigo = html
-		.replace(/<(script|style|noscript|svg|template|nav|footer|form)\b[\s\S]*?<\/\1>/gi, '')
+	const sinCodigo = quitarBloques(html, /<(script|style|noscript|svg|template|nav|footer|form)\b/gi)
 		.replace(/<\/(p|li|div|h\d|tr|dt|dd|section|article)>|<br\s*\/?>/gi, '\n')
-		.replace(/<[^>]+>/g, '');
+		.replace(/<[^<>]*>/g, '');
 	return decodificar(sinCodigo);
+}
+
+/**
+ * Quita bloques como <script>…</script> recorriendo el texto una sola vez.
+ * (Una expresión regular con "[\s\S]*?" vuelve a escanear hasta el final por cada
+ * apertura sin cerrar, y una página maliciosa podría colgar el servidor.)
+ */
+function quitarBloques(html: string, apertura: RegExp): string {
+	const minusculas = html.toLowerCase();
+	const sinCierre = new Set<string>();
+	let resultado = '';
+	let desde = 0;
+	apertura.lastIndex = 0;
+	for (let m = apertura.exec(html); m; m = apertura.exec(html)) {
+		const etiqueta = m[1].toLowerCase();
+		const cierre = sinCierre.has(etiqueta) ? -1 : minusculas.indexOf(`</${etiqueta}`, apertura.lastIndex);
+		if (cierre === -1) {
+			sinCierre.add(etiqueta); // no hay más cierres de esta etiqueta: no volver a buscarlos
+			continue;
+		}
+		const fin = minusculas.indexOf('>', cierre);
+		resultado += html.slice(desde, m.index);
+		desde = fin === -1 ? html.length : fin + 1;
+		apertura.lastIndex = desde;
+	}
+	return resultado + html.slice(desde);
 }
 
 // ---------- Texto libre ----------
@@ -257,14 +304,20 @@ export const vacia = (url: string | null = null): DatosReceta => ({
 type Nodo = any;
 
 function buscarReceta(html: string): Nodo | undefined {
-	const bloques = html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi);
-	for (const [, contenido] of bloques) {
+	// Se recorre con indexOf (una pasada) en vez de una expresión con "[\s\S]*?", que se
+	// volvería cuadrática con muchos <script> sin cerrar.
+	const minusculas = html.toLowerCase();
+	const apertura = /<script\b[^<>]{0,500}application\/ld\+json[^<>]{0,500}>/gi;
+	for (let m = apertura.exec(html); m; m = apertura.exec(html)) {
+		const cierre = minusculas.indexOf('</script', apertura.lastIndex);
+		if (cierre === -1) return;
 		try {
-			const receta = encontrar(JSON.parse(contenido.trim()));
+			const receta = encontrar(JSON.parse(html.slice(apertura.lastIndex, cierre).trim()));
 			if (receta) return receta;
 		} catch {
 			// JSON roto en la página: probamos con el siguiente bloque
 		}
+		apertura.lastIndex = cierre;
 	}
 }
 
@@ -346,7 +399,11 @@ function instrucciones(valor: Nodo): string[] {
 // ---------- HTML ----------
 
 function meta(html: string, propiedad: string): string | undefined {
-	const re = new RegExp(`<meta[^>]+(?:property|name)=["']${propiedad}["'][^>]+content=["']([^"']*)`, 'i');
+	// Largos acotados: sin tope, una etiqueta enorme haría que la búsqueda tarde al cuadrado.
+	const re = new RegExp(
+		`<meta[^<>]{1,500}(?:property|name)=["']${propiedad}["'][^<>]{1,500}content=["']([^"'<>]{0,2000})`,
+		'i',
+	);
 	const valor = html.match(re)?.[1];
 	return valor ? decodificar(valor) : undefined;
 }
@@ -378,7 +435,7 @@ function limpiar(valor: unknown, lineas = false): string {
 	const texto = decodificar(
 		String(valor ?? '')
 			.replace(/<\/(p|li|div|h\d)>|<br\s*\/?>/gi, '\n')
-			.replace(/<[^>]+>/g, ''),
+			.replace(/<[^<>]*>/g, ''),
 	);
 	const partes = texto.split('\n').map((l) => l.replace(/\s+/g, ' ').trim());
 	return lineas ? partes.filter(Boolean).join('\n') : partes.filter(Boolean).join(' ');

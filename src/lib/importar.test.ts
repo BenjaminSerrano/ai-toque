@@ -32,6 +32,22 @@ test('ficha incompleta: lee ingredientes y pasos del texto visible', () => {
 	assert.deepEqual(receta.pasos.split('\n'), ['Preheat the oven to 163 °C.', 'Bake for 20–25 minutes.']);
 });
 
+test('una página maliciosa no cuelga el servidor', () => {
+	const trampas = [
+		'<script'.repeat(150_000),
+		'<'.repeat(600_000),
+		`<meta property="og:title"${' a'.repeat(300_000)}`,
+		'<script type="application/ld+json">'.repeat(30_000),
+		`<p>${'1'.repeat(500_000)} x ${'2'.repeat(500_000)}</p>`,
+	];
+	for (const html of trampas) {
+		const inicio = performance.now();
+		recetaDesdeHtml(html, 'https://example.com');
+		const ms = performance.now() - inicio;
+		assert.ok(ms < 1500, `tardó ${Math.round(ms)} ms con ${html.slice(0, 30)}…`);
+	}
+});
+
 test('sin receta en ninguna parte: avisa', () => {
 	const { aviso } = recetaDesdeHtml('<html><head><title>Hola</title></head><body><p>Nada</p></body></html>', 'https://example.com');
 	assert.match(aviso ?? '', /No encontré la receta/);
