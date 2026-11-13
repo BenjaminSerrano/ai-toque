@@ -43,6 +43,12 @@ const casos: [string, string][] = [
 	['1 aguacate', '1 palta'],
 	['250 g de fresas', '250 g de frutillas'],
 	['½ cup (150g) dulce de leche', '½ taza (150g) de manjar'],
+	// Ingredientes escritos "Con Mayúscula Cada Palabra"
+	['1 cup (240g) Unsalted butter, Browned', '1 taza (240g) de mantequilla sin sal, dorada'],
+	['2 cups (240g) Graham Cracker Crumbs', '2 tazas (240g) de galletas Graham molidas'],
+	['1 cup (250g) Creamy Peanut Butter', '1 taza (250g) de mantequilla de maní cremosa'],
+	['12 oz (340g) Semi Sweet Chocolate, finely chopped', '340 g de chocolate semiamargo, picado fino'],
+	['2 tbsp BBQ sauce', '2 cdas. de BBQ salsa'],
 	['1 cucharada de fécula de maíz', '1 cda. de maicena'],
 	['Sal y pimienta al gusto', 'Sal y pimienta al gusto'],
 	['3 huevos', '3 huevos'],
@@ -58,7 +64,8 @@ test('pasos: °F a °C, pulgadas a cm y quitar numeración', () => {
 	assert.equal(adaptarPaso('Bake at 425 degrees for 20 minutes'), 'Bake at 220 °C for 20 minutes');
 	assert.equal(adaptarPaso('Grease a 9x13 inch pan'), 'Grease a 23 x 33 cm pan');
 	assert.equal(adaptarPaso('Use a 9-inch pie dish'), 'Use a 23 cm pie dish');
-	assert.equal(adaptarPaso('Hornea a 180 grados'), 'Hornea a 180 grados');
+	assert.equal(adaptarPaso('Hornea a 180 grados'), 'Hornea a 180 °C');
+	assert.equal(adaptarPaso('Hornear por 25 a 30min a 180grados.'), 'Hornear por 25 a 30 min a 180 °C.');
 	assert.equal(adaptarPaso('Calentar el aceite a 180°C o 350°F.'), 'Calentar el aceite a 180 °C.');
 	assert.equal(adaptarPaso('Bake at 200C/400F'), 'Bake at 200 °C');
 	assert.equal(adaptarPaso('11. 350 for 35-40 min, nice & golden brown'), '180 °C for 35-40 min, nice & golden brown');

@@ -10,6 +10,8 @@ const NO_LETRA_ANTES = '(?<![\\p{L}\\p{N}])';
 const NO_LETRA_DESPUES = '(?![\\p{L}\\p{N}])';
 const esMayuscula = (c: string) => c !== c.toLowerCase();
 const capitalizar = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+/** "Mantequilla" → "mantequilla", pero respeta siglas ("BBQ") y nombres propios en medio del texto. */
+const minusculaInicial = (s: string) => (s && !esMayuscula(s[1] ?? '') ? s[0].toLowerCase() + s.slice(1) : s);
 
 /** Minúsculas y sin tildes, para buscar "limon" y encontrar "limón". */
 export const normalizar = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -188,6 +190,11 @@ export function convertirTexto(texto: string): string {
 		.replace(/^(\d{3})(?=\s+(?:for|por|durante)\b)/i, (m, f) =>
 			Number(f) >= 300 && Number(f) <= 550 ? `${aCelsius(Number(f))} °C` : m,
 		)
+		// En recetas en español, "180 grados" son °C.
+		.replace(/(\d{2,3})\s*grados(?:\s*(?:C|cent[ií]grados|celsius)\b)?(?!\s*(?:F\b|Fahrenheit))/gi, (m, n) =>
+			Number(n) < 300 ? `${n} °C` : m,
+		)
+		.replace(/(\d)(min|hrs?|h)\b/gi, '$1 $2') // "30min" → "30 min"
 		.replace(/(\d+(?:[.,]\d+)?)\s*x\s*(\d+(?:[.,]\d+)?)[\s-]*(?:inch(?:es)?|in\.)/gi, (_, a, b) =>
 			`${aCm(leerNumero(a))} x ${aCm(leerNumero(b))} cm`,
 		)
@@ -245,7 +252,7 @@ function adaptarNombre(nombre: string): string {
 
 	const sustantivo = traducir(convertirTexto(cuerpo));
 	let texto = [sustantivo, ...adjetivos].filter(Boolean).join(' ');
-	for (const parte of resto) texto += `, ${traducir(convertirTexto(parte))}`;
+	for (const parte of resto) texto += `, ${minusculaInicial(traducir(convertirTexto(parte)))}`;
 	texto = concordar(texto, sustantivo)
 		.replace(/(\p{L}[\p{L} ]*?) \(\1\)/gu, '$1') // "coditos (coditos)" → "coditos"
 		.replace(/^(\d+(?:[.,]\d+)?\s?%)\s+([^,(]+?)(?=\s*(?:[,(]|$))/u, '$2 $1') // "70% chocolate" → "chocolate 70%"
@@ -258,7 +265,7 @@ function adaptarNombre(nombre: string): string {
 
 /** "1 1/2 cups all-purpose flour" → "1 ½ tazas de harina sin polvos de hornear" */
 export function adaptarIngrediente(linea: string): string {
-	const texto = preparar(linea);
+	const texto = preparar(linea.slice(0, 500));
 	if (!texto || texto.endsWith(':')) return traducir(texto);
 
 	const cantidad = texto.match(RE_CANTIDAD);
@@ -300,7 +307,8 @@ export function adaptarIngrediente(linea: string): string {
 
 	const medida = clave ? UNIDADES[clave] : undefined;
 	const cantidadTexto = numeros.map((n) => formatearCantidad(n, medida?.metrica)).join(' a ');
-	const nombre = adaptarNombre(resto);
+	// "1 cup Unsalted Butter" → "1 taza de mantequilla…": tras una cantidad, el ingrediente va en minúscula.
+	const nombre = numeros.length || medida ? minusculaInicial(adaptarNombre(resto)) : adaptarNombre(resto);
 
 	let resultado: string;
 	if (medida) {
@@ -315,6 +323,6 @@ export function adaptarIngrediente(linea: string): string {
 
 /** Quita la numeración, pasa °F/pulgadas/onzas a métrico y chileniza palabras sueltas. */
 export function adaptarPaso(texto: string): string {
-	const sinNumero = texto.replace(/^\s*(?:paso|step)?\s*\d+\s*[.):-](?!\d)\s*/i, '');
+	const sinNumero = texto.slice(0, 3000).replace(/^\s*(?:paso|step)?\s*\d+\s*[.):-](?!\d)\s*/i, '');
 	return capitalizar(traducirRegional(convertirTexto(sinNumero)));
 }

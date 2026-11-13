@@ -97,6 +97,37 @@ test('linkDeReceta encuentra el link a la receta escrita y omite redes', () => {
 	assert.equal(linkDeReceta('Sígueme en https://instagram.com/receta'), null);
 });
 
+test('"How To Make…" con más palabras es un título, no el encabezado de los pasos', () => {
+	const { ingredientes, pasos } = separarTexto(
+		'How To Make The Best Burger Buns Of All Time\nYou know those fancy burger buns?\nIngredients\n1 large egg\nDirections\nBake for 16 minutes.\nHow to make:\nEnjoy.',
+	);
+	assert.deepEqual(ingredientes, ['1 large egg']);
+	assert.deepEqual(pasos, ['Bake for 16 minutes.', 'Enjoy.']);
+});
+
+test('post sin encabezado de pasos: el horneado y el comentario final no son ingredientes', () => {
+	const post = `Dobladitas, muy faciles de hacer y demasiado ricas.
+
+Ingredientes:
+750gr de harina.
+150gr de mantequilla.
+340ml de agua caliente.
+
+Hornear por 25 a 30min a 180grados.
+
+Ideales para disfrutar una oncesita, ojala las hagan y las disfruten.`;
+	const { ingredientes, pasos } = separarTexto(post);
+	assert.deepEqual(ingredientes, ['750gr de harina', '150gr de mantequilla', '340ml de agua caliente']);
+	assert.deepEqual(pasos, ['Hornear por 25 a 30min a 180grados.']);
+});
+
+test('letras de fantasía de Instagram pasan a letras normales', () => {
+	assert.equal(limpiarTitulo('𝐌𝐀𝐍𝐉𝐀𝐑𝐀𝐓𝐄'), 'Manjarate');
+	assert.equal(limpiarTitulo('𝑸𝒖𝒆𝒒𝒖𝒆 𝒅𝒆 𝒑𝒍𝒂́𝒕𝒂𝒏𝒐'), 'Queque de plátano');
+	const { ingredientes } = separarTexto('𝐈𝐧𝐠𝐫𝐞𝐝𝐢𝐞𝐧𝐭𝐞𝐬:\n𝟏 lata de leche evaporada\n½ taza de ＡＺÚＣＡＲ');
+	assert.deepEqual(ingredientes, ['1 lata de leche evaporada', '½ taza de AZÚCAR']);
+});
+
 test('limpiarTitulo', () => {
 	assert.equal(limpiarTitulo('PASTEL DE CHOCLO 2025 | Alvaro Barrientos'), 'Pastel de choclo 2025');
 	assert.equal(limpiarTitulo('Queque de platano #queque #recetas'), 'Queque de platano');
