@@ -8,7 +8,7 @@ const RE_PASOS =
 
 /** Líneas que no son parte de la receta: redes sociales, links, hashtags, saludos de cierre. */
 const RE_RUIDO =
-	/https?:\/\/|www\.|bit\.ly|(^|\s)#\w|@\w{3,}|suscr[ií]b|subscribe|s[ií]gue(?:me|nos)|follow (?:me|us)|derechos|copyright|patreon|amazon|afiliad|affiliate|m[uú]sica|music|\bcanal\b|channel|instagram|facebook|tiktok|twitter|correo|contacto|e-?mail|gracias por|si te gust|dale like|comp[aá]rte|share|^\d{1,2}:\d{2}/i;
+	/https?:\/\/|www\.|bit\.ly|(^|\s)#\w|@\w{3,}|suscr[ií]b|subscribe|s[ií]gue(?:me|nos)|follow (?:me|us)|derechos|copyright|patreon|amazon|afiliad|affiliate|m[uú]sica|music|\bcanal\b|channel|instagram|facebook|tiktok|twitter|correo|contacto|e-?mail|gracias por|si te gust|dale like|comp[aá]rte|share|^\d{1,2}:\d{2}|^(?:comments?|comentarios?|reviews?|rese[ñn]as?|ratings?|valoraci[oó]n|newsletter|related|relacionad|you may also like|tambi[eé]n te puede)\b/i;
 
 /** Viñetas, flechas y emojis al principio o final de una línea. */
 const RE_ADORNOS_INICIO = /^[\s\p{Extended_Pictographic}️‍•●○◦▪▫■□►▶➤➜→⇒✓✔☑*·\-–—_=~|]+/u;

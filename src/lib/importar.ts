@@ -45,34 +45,48 @@ export function importarDesdeUrl(url: string): Promise<Importacion> {
 // ---------- Páginas web ----------
 
 async function importarWeb(url: string): Promise<Importacion> {
-	const html = await descargar(url);
-	const datos = buscarReceta(html);
+	return recetaDesdeHtml(await descargar(url), url);
+}
 
-	if (!datos) {
-		// Sin receta estructurada: al menos el título y la foto, el resto a mano.
-		return {
-			aviso: 'No encontré la receta dentro de esa página. Te dejé el título y la foto; pega el texto o complétala a mano.',
-			receta: {
-				...vacia(url),
-				titulo: limpiar(meta(html, 'og:title') ?? html.match(/<title[^>]*>([^<]*)/i)?.[1]),
-				imagen: meta(html, 'og:image') ?? null,
-			},
-		};
+/**
+ * Arma la receta desde el HTML de una página. Primero usa la ficha schema.org/Recipe;
+ * si no existe o viene sin ingredientes ni pasos, lee el texto visible de la página
+ * buscando encabezados como "Ingredientes" y "Preparación".
+ */
+export function recetaDesdeHtml(html: string, url: string): Importacion {
+	const datos = buscarReceta(html);
+	let original = datos ? textos(datos.recipeIngredient ?? datos.ingredients).map(limpiar).filter(Boolean) : [];
+	let pasos: string[] = datos ? instrucciones(datos.recipeInstructions) : [];
+	if (!original.length && !pasos.length) {
+		const visible = separarTexto(textoVisible(html));
+		original = visible.ingredientes;
+		pasos = visible.pasos;
 	}
 
-	const original = textos(datos.recipeIngredient ?? datos.ingredients).map(limpiar).filter(Boolean);
-	return {
-		receta: {
-			...vacia(url),
-			titulo: limpiar(datos.name),
-			imagen: imagen(datos.image),
-			porciones: porciones(datos.recipeYield),
-			tiempo: duracion(datos.totalTime) ?? sumarDuraciones(datos.prepTime, datos.cookTime),
-			ingredientes: original.map(adaptarIngrediente).join('\n'),
-			pasos: instrucciones(datos.recipeInstructions).map(adaptarPaso).filter(Boolean).join('\n'),
-			original: original.join('\n'),
-		},
+	const receta: DatosReceta = {
+		...vacia(url),
+		titulo: limpiar(datos?.name ?? meta(html, 'og:title') ?? html.match(/<title[^>]*>([^<]*)/i)?.[1]),
+		imagen: datos ? imagen(datos.image) : (meta(html, 'og:image') ?? null),
+		porciones: datos ? porciones(datos.recipeYield) : null,
+		tiempo: datos ? (duracion(datos.totalTime) ?? sumarDuraciones(datos.prepTime, datos.cookTime)) : null,
+		ingredientes: original.map(adaptarIngrediente).join('\n'),
+		pasos: pasos.map(adaptarPaso).filter(Boolean).join('\n'),
+		original: original.join('\n'),
 	};
+	if (original.length || pasos.length) return { receta };
+	return {
+		receta,
+		aviso: 'No encontré la receta dentro de esa página. Te dejé el título y la foto; pega el texto o complétala a mano.',
+	};
+}
+
+/** El texto que se ve en la página, una línea por bloque, sin scripts, estilos ni navegación. */
+function textoVisible(html: string): string {
+	const sinCodigo = html
+		.replace(/<(script|style|noscript|svg|template|nav|footer|form)\b[\s\S]*?<\/\1>/gi, '')
+		.replace(/<\/(p|li|div|h\d|tr|dt|dd|section|article)>|<br\s*\/?>/gi, '\n')
+		.replace(/<[^>]+>/g, '');
+	return decodificar(sinCodigo);
 }
 
 // ---------- Texto libre ----------
@@ -305,7 +319,16 @@ function formatearMinutos(total: number): string | null {
 	return [h && `${h} h`, min && `${min} min`].filter(Boolean).join(' ');
 }
 
-const duracion = (iso: unknown) => formatearMinutos(minutos(iso));
+/** "PT1H10M" → "1 h 10 min". Algunos sitios escriben el tiempo a mano ("45 min", "1 hr 20 mins"): se acepta tal cual. */
+function duracion(valor: unknown): string | null {
+	const formateada = formatearMinutos(minutos(valor));
+	if (formateada) return formateada;
+	const texto = limpiar(valor);
+	if (!/^\d[\d\s.,–-]*(h|hr|hrs|hours?|horas?|min|mins|minutes?|minutos?)\b[\w\s.,–-]*$/i.test(texto) || texto.length > 25) return null;
+	return texto
+		.replace(/\b(?:hrs?|hours?|horas?)\b/gi, 'h')
+		.replace(/\b(?:mins|minutes?|minutos?)\b/gi, 'min');
+}
 const sumarDuraciones = (a: unknown, b: unknown) => formatearMinutos(minutos(a) + minutos(b));
 
 /** Aplana texto, HowToStep y HowToSection en una lista de pasos. Las secciones quedan como "Nombre:". */
@@ -330,6 +353,7 @@ function meta(html: string, propiedad: string): string | undefined {
 
 const ENTIDADES: Record<string, string> = {
 	amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', deg: '°', frasl: '⁄',
+	zwj: '‍', zwnj: '‌', shy: '',
 	frac12: '½', frac14: '¼', frac34: '¾', ndash: '–', mdash: '—', hellip: '…',
 	lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”', times: '×',
 	aacute: 'á', eacute: 'é', iacute: 'í', oacute: 'ó', uacute: 'ú', ntilde: 'ñ', uuml: 'ü',
