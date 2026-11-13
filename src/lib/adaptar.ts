@@ -168,6 +168,14 @@ const metrico = (n: number, factor: number, unidad: string) =>
 /** Convierte °F, pulgadas, onzas y libras que aparezcan en cualquier parte del texto. */
 export function convertirTexto(texto: string): string {
 	return preparar(texto)
+		// Si la receta ya trae ambas escalas, se respeta su °C: "325°F (163°C)" → "163 °C", "175°C (350°F)" → "175 °C".
+		.replace(/(\d{2,3})\s*[°º]?\s*F\s*[(/]\s*(\d{2,3})\s*[°º]?\s*C\)?/g, '$2 °C')
+		.replace(/(\d{2,3})\s*[°º]?\s*C\s*[(/]\s*\d{2,3}\s*[°º]?\s*F\)?/g, '$1 °C')
+		// Igual con los pesos: "8 oz (227g)" → "227 g".
+		.replace(
+			new RegExp(`(?:${NUM})[\\s-]*(?:fl\\.? ?oz|oz|ounces?|lbs?|pounds?)\\.?\\s*\\((\\d+(?:[.,]\\d+)?)\\s*(g|ml)\\)`, 'giu'),
+			(_, n, u) => `${n} ${u.toLowerCase()}`,
+		)
 		.replace(/(\d{2,3})\s*(?:°|º|degrees?|grados)?\s*(?:F|Fahrenheit)(?!\p{L})/gu, (_, f) => `${aCelsius(Number(f))} °C`)
 		.replace(/(\d{3})\s*(?:°|º|degrees?|grados)(?!\s*[CF])/gu, (m, f) =>
 			Number(f) >= 300 ? `${aCelsius(Number(f))} °C` : m,
@@ -240,6 +248,7 @@ function adaptarNombre(nombre: string): string {
 	for (const parte of resto) texto += `, ${traducir(convertirTexto(parte))}`;
 	texto = concordar(texto, sustantivo)
 		.replace(/(\p{L}[\p{L} ]*?) \(\1\)/gu, '$1') // "coditos (coditos)" → "coditos"
+		.replace(/^(\d+(?:[.,]\d+)?\s?%)\s+([^,(]+?)(?=\s*(?:[,(]|$))/u, '$2 $1') // "70% chocolate" → "chocolate 70%"
 		.replace(/\s+/g, ' ')
 		.trim();
 	return esMayuscula(principal.trim()[0] ?? '') ? capitalizar(texto) : texto;
@@ -282,7 +291,10 @@ export function adaptarIngrediente(linea: string): string {
 
 	const conversion = clave ? CONVERSIONES[clave] : undefined;
 	if (conversion) {
-		numeros = numeros.map((n) => redondear(n * conversion.factor, conversion.a));
+		// "8 oz (227g)": si el original ya trae el peso exacto en la unidad de destino, se usa ese.
+		const exacto = parentesis.match(new RegExp(`^\\((\\d+(?:[.,]\\d+)?)\\s*${conversion.a}\\)$`, 'i'));
+		numeros = exacto ? [leerNumero(exacto[1])] : numeros.map((n) => redondear(n * conversion.factor, conversion.a));
+		if (exacto) parentesis = '';
 		clave = conversion.a;
 	}
 

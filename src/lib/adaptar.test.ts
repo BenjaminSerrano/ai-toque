@@ -42,6 +42,7 @@ const casos: [string, string][] = [
 	['200 gr. de mantequilla', '200 g de mantequilla'],
 	['1 aguacate', '1 palta'],
 	['250 g de fresas', '250 g de frutillas'],
+	['½ cup (150g) dulce de leche', '½ taza (150g) de manjar'],
 	['1 cucharada de fécula de maíz', '1 cda. de maicena'],
 	['Sal y pimienta al gusto', 'Sal y pimienta al gusto'],
 	['3 huevos', '3 huevos'],
@@ -66,6 +67,9 @@ test('pasos: °F a °C, pulgadas a cm y quitar numeración', () => {
 	assert.equal(adaptarPaso('Reduce to 300 ml and add 400 g of flour'), 'Reduce to 300 ml and add 400 g of flour');
 	assert.equal(adaptarPaso('Hornea a 180 por 20 minutos'), 'Hornea a 180 por 20 minutos');
 	assert.equal(adaptarPaso('4. mix until combined'), 'Mix until combined');
+	assert.equal(adaptarPaso('Preheat the oven to 325°F (163°C).'), 'Preheat the oven to 163 °C.');
+	assert.equal(adaptarPaso('Hornear a 175°C (350°F).'), 'Hornear a 175 °C.');
+	assert.equal(adaptarPaso('Add the 8 oz (227g) of chocolate'), 'Add the 227 g of chocolate');
 	assert.equal(adaptarPaso('Paso 2: Agrega las fresas'), 'Agrega las frutillas');
 	assert.equal(adaptarPaso('1.5 kg de papas'), '1.5 kg de papas');
 });
