@@ -121,6 +121,13 @@ Ideales para disfrutar una oncesita, ojala las hagan y las disfruten.`;
 	assert.deepEqual(pasos, ['Hornear por 25 a 30min a 180grados.']);
 });
 
+test('post sin encabezados: "5 CHURRASCAS" es el rendimiento, no un ingrediente', () => {
+	const { ingredientes } = separarTexto(
+		'QUE TOMAN DE ONCE HOY?\n@pf_marca_oficial #pflaoncedechile\n\n5 CHURRASCAS\n200gr harina\n50cc aceite de maravilla\n1 cuchara de polvos de hornear',
+	);
+	assert.deepEqual(ingredientes, ['200gr harina', '50cc aceite de maravilla', '1 cuchara de polvos de hornear']);
+});
+
 test('letras de fantasía de Instagram pasan a letras normales', () => {
 	assert.equal(limpiarTitulo('𝐌𝐀𝐍𝐉𝐀𝐑𝐀𝐓𝐄'), 'Manjarate');
 	assert.equal(limpiarTitulo('𝑸𝒖𝒆𝒒𝒖𝒆 𝒅𝒆 𝒑𝒍𝒂́𝒕𝒂𝒏𝒐'), 'Queque de plátano');

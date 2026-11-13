@@ -50,6 +50,8 @@ const casos: [string, string][] = [
 	['12 oz (340g) Semi Sweet Chocolate, finely chopped', '340 g de chocolate semiamargo, picado fino'],
 	['2 tbsp BBQ sauce', '2 cdas. de BBQ salsa'],
 	['1 cucharada de fécula de maíz', '1 cda. de maicena'],
+	['1 cuchara de polvos de hornear', '1 cda. de polvos de hornear'],
+	['50cc aceite de maravilla', '50 ml de aceite de maravilla'],
 	['Sal y pimienta al gusto', 'Sal y pimienta al gusto'],
 	['3 huevos', '3 huevos'],
 	['Para la salsa:', 'Para la salsa:'],

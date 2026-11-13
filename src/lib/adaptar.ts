@@ -126,7 +126,7 @@ const CONVERSIONES: Record<string, { a: string; factor: number }> = {
 const ALIAS: Record<string, string> = {
 	cup: 'taza', cups: 'taza', taza: 'taza', tazas: 'taza',
 	tablespoon: 'cda', tablespoons: 'cda', tbsp: 'cda', tbsps: 'cda', tbs: 'cda', tbl: 'cda',
-	cucharada: 'cda', cucharadas: 'cda', cda: 'cda', cdas: 'cda',
+	cucharada: 'cda', cucharadas: 'cda', cda: 'cda', cdas: 'cda', cuchara: 'cda', cucharas: 'cda',
 	teaspoon: 'cdta', teaspoons: 'cdta', tsp: 'cdta', tsps: 'cdta',
 	cucharadita: 'cdta', cucharaditas: 'cdta', cdta: 'cdta', cdtas: 'cdta', cdita: 'cdta', cditas: 'cdta',
 	g: 'g', gr: 'g', grs: 'g', gram: 'g', grams: 'g', gramo: 'g', gramos: 'g',

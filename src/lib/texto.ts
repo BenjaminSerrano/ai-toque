@@ -29,8 +29,12 @@ export const letrasNormales = (texto: string) =>
 const limpiarLinea = (linea: string) =>
 	linea.replace(RE_ADORNOS_INICIO, '').replace(RE_ADORNOS_FIN, '').replace(/\s+/g, ' ').trim();
 
-/** Parece ingrediente: empieza con una cantidad o una fracción y es corta. */
-const pareceIngrediente = (linea: string) => /^(\d|[½⅓⅔¼¾⅛])/.test(linea) && linea.length <= 90;
+/**
+ * Parece ingrediente: empieza con una cantidad o una fracción y es corta.
+ * "5 CHURRASCAS" o "12 UNIDADES" (todo en mayúsculas) es el rendimiento, no un ingrediente.
+ */
+const pareceIngrediente = (linea: string) =>
+	/^(\d|[½⅓⅔¼¾⅛])/.test(linea) && linea.length <= 90 && !/^\d+\s+[\p{Lu}\s]+$/u.test(linea);
 /** Parece paso: viene numerado ("1.", "2)", "Paso 3"). */
 const parecePaso = (linea: string) => /^(?:paso\s*)?\d+\s*[.):-](?!\d)/i.test(linea);
 /** Empieza con un verbo de cocina: "Hornear por 25 min" dentro de una lista de ingredientes es un paso. */
