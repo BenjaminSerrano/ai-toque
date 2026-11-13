@@ -25,7 +25,7 @@ const NAVEGADOR = {
 };
 
 async function descargar(url: string, cabeceras: Record<string, string> = {}): Promise<string> {
-	let respuesta: Response;
+	let respuesta: Awaited<ReturnType<typeof pedir>>;
 	try {
 		respuesta = await pedir(url, { headers: { ...NAVEGADOR, ...cabeceras }, signal: AbortSignal.timeout(15_000) });
 	} catch (error) {
