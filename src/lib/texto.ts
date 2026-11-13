@@ -27,14 +27,45 @@ export interface TextoSeparado {
 	pasos: string[];
 }
 
+/**
+ * Junta los sub-ítems con sangría a su paso:
+ * "1. Bloom yeast" + "   1. 174g water" + "   2. 125g milk" → "1. Bloom yeast: 174g water, 125g milk"
+ */
+class Pasos {
+	private lista: { texto: string; partes: string[] }[] = [];
+
+	agregar(linea: string, sangria: boolean) {
+		const anterior = this.lista.at(-1);
+		// Un subtítulo sin número ("Para la masa:") no recibe sub-ítems; un paso numerado sí.
+		const esSubtitulo = anterior?.texto.endsWith(':') && !parecePaso(anterior.texto);
+		if (sangria && anterior && !esSubtitulo) {
+			anterior.partes.push(linea.replace(/^(?:paso\s*)?\d+\s*[.):-](?!\d)\s*/i, ''));
+		} else {
+			this.lista.push({ texto: linea, partes: [] });
+		}
+	}
+
+	get length() {
+		return this.lista.length;
+	}
+
+	resultado(): string[] {
+		return this.lista.map(({ texto, partes }) =>
+			partes.length ? `${texto.replace(/\s*:$/, '')}: ${partes.join(', ')}` : texto,
+		);
+	}
+}
+
 export function separarTexto(texto: string): TextoSeparado {
-	const lineas = texto.split(/\r?\n/).map(limpiarLinea);
+	const crudas = texto.split(/\r?\n/);
+	const lineas = crudas.map(limpiarLinea);
+	const sangrias = crudas.map((cruda) => /^(?: {2,}|\t)/.test(cruda));
 	const ingredientes: string[] = [];
-	const pasos: string[] = [];
+	const pasos = new Pasos();
 	let seccion: 'ninguna' | 'ingredientes' | 'pasos' = 'ninguna';
 	let hubo = false;
 
-	for (const linea of lineas) {
+	for (const [i, linea] of lineas.entries()) {
 		if (!linea) continue;
 		const ing = linea.length <= 45 ? linea.match(RE_INGREDIENTES) : null;
 		const pas = linea.length <= 45 ? linea.match(RE_PASOS) : null;
@@ -44,7 +75,9 @@ export function separarTexto(texto: string): TextoSeparado {
 			// "Ingredientes para el relleno:" → subtítulo "Para el relleno:"
 			const resto = (ing ?? pas)?.[1]?.replace(/:$/, '');
 			if (resto && /^(?:para|for)\b/i.test(resto)) {
-				(ing ? ingredientes : pasos).push(`${resto[0].toUpperCase()}${resto.slice(1)}:`);
+				const titulo = `${resto[0].toUpperCase()}${resto.slice(1)}:`;
+				if (ing) ingredientes.push(titulo);
+				else pasos.agregar(titulo, false);
 			}
 			continue;
 		}
@@ -55,22 +88,24 @@ export function separarTexto(texto: string): TextoSeparado {
 		// Subtítulo dentro de una sección: "Dough-", "Para el relleno:", "Masa —"
 		const subtitulo = seccion !== 'ninguna' && linea.length <= 40 && !/\d/.test(linea) && linea.match(/^(.+?)\s*[-–—:]$/);
 		if (subtitulo) {
-			(seccion === 'ingredientes' ? ingredientes : pasos).push(`${subtitulo[1]}:`);
+			if (seccion === 'ingredientes') ingredientes.push(`${subtitulo[1]}:`);
+			else pasos.agregar(`${subtitulo[1]}:`, false);
 			continue;
 		}
 		if (seccion === 'ingredientes') ingredientes.push(linea);
-		else if (seccion === 'pasos') pasos.push(linea);
+		else if (seccion === 'pasos') pasos.agregar(linea, sangrias[i]);
 	}
 
 	// Sin encabezados: rescatar lo que tiene forma de ingrediente o de paso numerado.
 	if (!hubo) {
-		for (const linea of lineas) {
+		for (const [i, linea] of lineas.entries()) {
 			if (!linea || RE_RUIDO.test(linea)) continue;
-			if (parecePaso(linea)) pasos.push(linea);
+			if (sangrias[i] && pasos.length) pasos.agregar(linea, true);
+			else if (parecePaso(linea)) pasos.agregar(linea, false);
 			else if (pareceIngrediente(linea)) ingredientes.push(linea);
 		}
 	}
-	return { ingredientes, pasos };
+	return { ingredientes, pasos: pasos.resultado() };
 }
 
 /** Primer link de la descripción que parece llevar a la receta escrita ("RECIPE: https://…"). */

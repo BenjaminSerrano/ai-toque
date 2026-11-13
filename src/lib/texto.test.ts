@@ -67,6 +67,22 @@ test('subtítulo con guion dentro de ingredientes ("Dough-")', () => {
 	assert.deepEqual(ingredientes, ['Dough:', '3/4 cup (174g) water', '3 tablespoons unsalted butter softened']);
 });
 
+test('pasos con sub-ítems con sangría se juntan en su paso', () => {
+	const texto = `1. Bloom yeast
+    1. 174g water
+    2. 125g whole milk
+    3. sit for 10 minutes
+2. Flour mixture:
+    1. 440 g of bread
+    2. 8g sea salt
+3. Pour in yeast mixture to flour in mixer`;
+	assert.deepEqual(separarTexto(texto).pasos, [
+		'1. Bloom yeast: 174g water, 125g whole milk, sit for 10 minutes',
+		'2. Flour mixture: 440 g of bread, 8g sea salt',
+		'3. Pour in yeast mixture to flour in mixer',
+	]);
+});
+
 test('texto sin encabezados: rescata cantidades y pasos numerados', () => {
 	const { ingredientes, pasos } = separarTexto('Queque rápido\n2 huevos\n1 taza de azúcar\n1) Batir todo\n2) Hornear');
 	assert.deepEqual(ingredientes, ['2 huevos', '1 taza de azúcar']);

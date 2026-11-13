@@ -60,6 +60,12 @@ test('pasos: °F a °C, pulgadas a cm y quitar numeración', () => {
 	assert.equal(adaptarPaso('Hornea a 180 grados'), 'Hornea a 180 grados');
 	assert.equal(adaptarPaso('Calentar el aceite a 180°C o 350°F.'), 'Calentar el aceite a 180 °C.');
 	assert.equal(adaptarPaso('Bake at 200C/400F'), 'Bake at 200 °C');
+	assert.equal(adaptarPaso('11. 350 for 35-40 min, nice & golden brown'), '180 °C for 35-40 min, nice & golden brown');
+	assert.equal(adaptarPaso('Preheat the oven to 375.'), 'Preheat the oven to 190 °C.');
+	assert.equal(adaptarPaso('Roll out dough into 1/2 inch thick dough'), 'Roll out dough into 1 cm thick dough');
+	assert.equal(adaptarPaso('Reduce to 300 ml and add 400 g of flour'), 'Reduce to 300 ml and add 400 g of flour');
+	assert.equal(adaptarPaso('Hornea a 180 por 20 minutos'), 'Hornea a 180 por 20 minutos');
+	assert.equal(adaptarPaso('4. mix until combined'), 'Mix until combined');
 	assert.equal(adaptarPaso('Paso 2: Agrega las fresas'), 'Agrega las frutillas');
 	assert.equal(adaptarPaso('1.5 kg de papas'), '1.5 kg de papas');
 });

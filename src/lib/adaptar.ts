@@ -172,6 +172,14 @@ export function convertirTexto(texto: string): string {
 		.replace(/(\d{3})\s*(?:°|º|degrees?|grados)(?!\s*[CF])/gu, (m, f) =>
 			Number(f) >= 300 ? `${aCelsius(Number(f))} °C` : m,
 		)
+		// Temperatura sin unidad: un horno casero no pasa de ~300 °C, así que 300–550 son °F.
+		// "Preheat to 350", "hornea a 375", "350 for 35 min".
+		.replace(/\b(at|to|a)\s+(\d{3})\b(?!\s*(?:°|º|degrees?|grados|[CF]\b|g\b|gr|ml\b|cc\b|kg\b))/gi, (m, antes, f) =>
+			Number(f) >= 300 && Number(f) <= 550 ? `${antes} ${aCelsius(Number(f))} °C` : m,
+		)
+		.replace(/^(\d{3})(?=\s+(?:for|por|durante)\b)/i, (m, f) =>
+			Number(f) >= 300 && Number(f) <= 550 ? `${aCelsius(Number(f))} °C` : m,
+		)
 		.replace(/(\d+(?:[.,]\d+)?)\s*x\s*(\d+(?:[.,]\d+)?)[\s-]*(?:inch(?:es)?|in\.)/gi, (_, a, b) =>
 			`${aCm(leerNumero(a))} x ${aCm(leerNumero(b))} cm`,
 		)
@@ -296,5 +304,5 @@ export function adaptarIngrediente(linea: string): string {
 /** Quita la numeración, pasa °F/pulgadas/onzas a métrico y chileniza palabras sueltas. */
 export function adaptarPaso(texto: string): string {
 	const sinNumero = texto.replace(/^\s*(?:paso|step)?\s*\d+\s*[.):-](?!\d)\s*/i, '');
-	return traducirRegional(convertirTexto(sinNumero));
+	return capitalizar(traducirRegional(convertirTexto(sinNumero)));
 }
