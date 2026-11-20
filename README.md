@@ -27,11 +27,26 @@ pnpm test       # tests con node --test
 pnpm build      # build de producción en dist/
 ```
 
-La base de datos y las fotos descargadas se guardan en `data/` (no se versiona). Para usar otra ruta:
+La base de datos y las fotos descargadas se guardan en `data/` (no se versiona).
+
+## Variables de entorno
+
+| Variable | Para qué |
+| --- | --- |
+| `CLAVE` | La clave de la casa para entrar al recetario. En desarrollo es opcional; publicado, sin ella la app no abre. |
+| `DB_PATH` | Ruta del archivo SQLite (por defecto `data/ai-toque.db`). Las fotos se guardan en la misma carpeta. |
+| `HOST`, `PORT` | Dónde escucha el servidor de producción. Para publicarlo, `HOST=0.0.0.0`. |
+
+Para probar la clave en local: `CLAVE=algo pnpm dev`.
+
+## Producción
 
 ```sh
-DB_PATH=/ruta/a/ai-toque.db pnpm dev
+pnpm build
+pnpm start
 ```
+
+La carpeta de `DB_PATH` tiene que estar en un disco que se mantenga entre despliegues (un volumen); si no, las recetas se pierden en cada despliegue.
 
 ## Estructura
 

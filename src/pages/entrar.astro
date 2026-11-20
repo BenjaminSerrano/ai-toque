@@ -1,0 +1,74 @@
+---
+import Icono from '../components/Icono.astro';
+import Layout from '../layouts/Layout.astro';
+import { claveDeLaCasa, COOKIE_SESION, fichaDeSesion, iguales, rutaDeVuelta } from '../lib/sesion.ts';
+
+const clave = claveDeLaCasa();
+const volver = rutaDeVuelta(Astro.url.searchParams.get('volver'));
+let error = '';
+
+// Sin clave configurada (solo en desarrollo) no hay nada que pedir.
+if (!clave) return Astro.redirect(volver);
+
+if (Astro.request.method === 'POST') {
+	const form = await Astro.request.formData();
+	if (iguales(String(form.get('clave') ?? '').trim(), clave)) {
+		Astro.cookies.set(COOKIE_SESION, fichaDeSesion(clave), {
+			httpOnly: true,
+			secure: import.meta.env.PROD,
+			sameSite: 'lax',
+			path: '/',
+			maxAge: 60 * 60 * 24 * 365,
+		});
+		return Astro.redirect(volver, 303);
+	}
+	// Una pausa en cada intento fallido hace muy lento probar claves al azar.
+	await new Promise((listo) => setTimeout(listo, 1000));
+	error = 'Esa no es la clave. Revisa las mayúsculas y vuelve a intentarlo.';
+	Astro.response.status = 401;
+}
+---
+
+<Layout title="Entrar">
+	<div class="trazo mx-auto mt-2 max-w-md p-6 sm:mt-6 sm:p-10">
+		<h1 class="tiza text-6xl">Entrar al recetario</h1>
+		<p class="mt-3 text-xl leading-relaxed text-tiza/80">Es el recetario de la casa. Escribe la clave para verlo.</p>
+		{
+			error && (
+				<p id="error" role="alert" class="aviso mt-6">
+					<Icono nombre="info" class="mt-0.5 size-6 shrink-0 text-celeste" />
+					<span>{error}</span>
+				</p>
+			)
+		}
+		<form method="post" class="mt-6">
+			<!-- Para que el gestor de contraseñas guarde la clave con un nombre. -->
+			<input type="text" name="usuario" value="casa" autocomplete="username" hidden />
+			<label for="clave" class="etiqueta">Clave</label>
+			<input
+				id="clave"
+				name="clave"
+				type="password"
+				autocomplete="current-password"
+				enterkeyhint="go"
+				required
+				autofocus
+				class="campo"
+				aria-invalid={error ? 'true' : undefined}
+				aria-describedby={error ? 'error' : undefined}
+			/>
+			<label class="mt-4 flex w-fit cursor-pointer items-center gap-3 text-base">
+				<input type="checkbox" id="mostrar" />
+				Mostrar la clave
+			</label>
+			<button type="submit" class="boton mt-6 w-full" data-espera="Entrando…">Entrar</button>
+		</form>
+	</div>
+</Layout>
+
+<script>
+	const campo = document.querySelector<HTMLInputElement>('#clave');
+	document.querySelector<HTMLInputElement>('#mostrar')?.addEventListener('change', (evento) => {
+		if (campo) campo.type = (evento.currentTarget as HTMLInputElement).checked ? 'text' : 'password';
+	});
+</script>

@@ -10,6 +10,8 @@ const { title } = Astro.props;
 const ruta = Astro.url.pathname;
 const enRecetario = ruta === '/' || ruta.startsWith('/recetas');
 const escribiendo = ruta === '/nueva' && !Astro.url.searchParams.has('url');
+// Antes de escribir la clave no hay menú: esos links volverían a pedirla.
+const entrando = ruta === '/entrar';
 ---
 
 <!doctype html>
@@ -27,6 +29,7 @@ const escribiendo = ruta === '/nueva' && !Astro.url.searchParams.has('url');
 				<a href="/" class="tiza -my-1 text-5xl sm:text-6xl" aria-label="AI toque, ir al recetario">
 					A<span class="text-naranja">I</span> toque
 				</a>
+				{!entrando && (
 				<div class="flex items-center gap-1 sm:gap-6">
 					<a
 						href="/"
@@ -48,6 +51,7 @@ const escribiendo = ruta === '/nueva' && !Astro.url.searchParams.has('url');
 						<span>Escribir<span class="hidden sm:inline"> una receta</span></span>
 					</a>
 				</div>
+				)}
 			</nav>
 		</header>
 		<main class="mx-auto max-w-[90rem] px-5 pt-8 pb-20 sm:px-8 sm:pt-12 lg:px-[72px]">

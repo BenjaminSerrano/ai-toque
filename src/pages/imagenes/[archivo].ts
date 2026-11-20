@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ params }) => {
 	try {
 		const datos = await readFile(join(CARPETA_DATOS, 'imagenes', archivo));
 		return new Response(datos, {
-			headers: { 'content-type': TIPOS[extension], 'cache-control': 'public, max-age=31536000, immutable' },
+			headers: { 'content-type': TIPOS[extension], 'cache-control': 'private, max-age=31536000, immutable' },
 		});
 	} catch {
 		return new Response(null, { status: 404 });
