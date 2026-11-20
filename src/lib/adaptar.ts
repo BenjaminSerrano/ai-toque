@@ -20,9 +20,11 @@ function crearTraductor(diccionario: Record<string, string>) {
 	const claves = Object.keys(diccionario).sort(porLargo).map(escapar);
 	const re = new RegExp(`${NO_LETRA_ANTES}(?:${claves.join('|')})${NO_LETRA_DESPUES}`, 'giu');
 	return (texto: string) =>
-		texto.replace(re, (encontrado) => {
+		texto.replace(re, (encontrado: string, posicion: number) => {
 			const valor = diccionario[encontrado.toLowerCase()] ?? encontrado;
-			return esMayuscula(encontrado[0]) ? capitalizar(valor) : valor;
+			// Mayúscula solo al inicio de una frase: "o 1 Tbsp" → "o 1 cda.", no "o 1 Cda.".
+			const inicioDeFrase = posicion === 0 || /[.!?:]\s*$/.test(texto.slice(0, posicion));
+			return inicioDeFrase && esMayuscula(encontrado[0]) ? capitalizar(valor) : valor;
 		});
 }
 
@@ -150,6 +152,9 @@ const ALIAS: Record<string, string> = {
 	sprig: 'ramita', sprigs: 'ramita', ramita: 'ramita', ramitas: 'ramita',
 	bunch: 'atado', bunches: 'atado', atado: 'atado', atados: 'atado',
 };
+
+/** Unidades que miden lo mismo (peso o volumen). */
+const FAMILIA: Record<string, string> = { g: 'peso', kg: 'peso', ml: 'volumen', l: 'volumen' };
 
 /** Unidades que pueden ir sin número ("pizca de sal"). */
 const SIN_CANTIDAD = new Set(['pizca', 'punado', 'ramita', 'atado']);
@@ -298,11 +303,22 @@ export function adaptarIngrediente(linea: string): string {
 
 	const conversion = clave ? CONVERSIONES[clave] : undefined;
 	if (conversion) {
-		// "8 oz (227g)": si el original ya trae el peso exacto en la unidad de destino, se usa ese.
-		const exacto = parentesis.match(new RegExp(`^\\((\\d+(?:[.,]\\d+)?)\\s*${conversion.a}\\)$`, 'i'));
-		numeros = exacto ? [leerNumero(exacto[1])] : numeros.map((n) => redondear(n * conversion.factor, conversion.a));
-		if (exacto) parentesis = '';
-		clave = conversion.a;
+		// "8 oz (227g)", "3 quarts (2.8L)", "3-4 oz (85-113g)": si el original ya trae la medida métrica, se usa esa.
+		const exacto = parentesis.match(/^\((\d+(?:[.,]\d+)?)(?:\s*[-–]\s*(\d+(?:[.,]\d+)?))?\s*(kg|g|ml|l)\)$/i);
+		const unidadExacta = exacto?.[3].toLowerCase();
+		if (exacto && unidadExacta && FAMILIA[unidadExacta] === FAMILIA[conversion.a]) {
+			numeros = [exacto[1], exacto[2]].filter(Boolean).map(leerNumero);
+			clave = unidadExacta;
+			parentesis = '';
+		} else {
+			numeros = numeros.map((n) => redondear(n * conversion.factor, conversion.a));
+			clave = conversion.a;
+			// 1.360 g → 1,36 kg; 2.840 ml → 2,84 l
+			if (Math.max(...numeros) >= 1000 && (clave === 'g' || clave === 'ml')) {
+				numeros = numeros.map((n) => Math.round(n / 10) / 100);
+				clave = clave === 'g' ? 'kg' : 'l';
+			}
+		}
 	}
 
 	const medida = clave ? UNIDADES[clave] : undefined;
