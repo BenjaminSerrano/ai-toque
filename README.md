@@ -1,43 +1,46 @@
-# Astro Starter Kit: Minimal
+# AI toque
+
+El recetario de la casa. Pegas el link de una receta (página web, YouTube o Instagram) y la deja escrita a la chilena: ingredientes con nombres locales (palta, choclo, maicena) y medidas de acá (gramos, ml, tazas de 240 ml, °C). La guardas, la revisas y la cocinas sin volver a la red social.
+
+La adaptación funciona con reglas y un diccionario, sin IA. El nombre se ríe de eso.
+
+## Qué hace
+
+- Importa recetas desde páginas con datos schema.org/Recipe, descripciones de YouTube y posts de Instagram.
+- Traduce ingredientes del inglés y convierte medidas (oz, lb, cups, °F…) a medidas chilenas.
+- Muestra cada receta importada para revisarla antes de guardarla. Si la importación falla, se puede escribir a mano.
+- Busca por nombre o ingrediente, sin importar tildes.
+- Funciona en el celular mientras cocinas: puedes ir marcando los ingredientes y los pasos van numerados.
+
+## Stack
+
+Astro 7 con render en servidor (adapter Node), Tailwind v4 y el SQLite que trae Node (`node:sqlite`).
+
+## Desarrollo
+
+Requiere Node 26 (ver `.node-version`) y pnpm.
 
 ```sh
-pnpm create astro@latest -- --template minimal
+pnpm install
+pnpm dev        # http://localhost:4321
+pnpm test       # tests con node --test
+pnpm build      # build de producción en dist/
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+La base de datos y las fotos descargadas se guardan en `data/` (no se versiona). Para usar otra ruta:
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```sh
+DB_PATH=/ruta/a/ai-toque.db pnpm dev
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Estructura
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| Ruta | Qué hay |
+| --- | --- |
+| `src/pages/` | Páginas: recetario, nueva receta, ver y editar receta |
+| `src/lib/importar.ts` | Lee recetas desde páginas, YouTube e Instagram |
+| `src/lib/adaptar.ts` | Convierte medidas y adapta cada línea de ingrediente |
+| `src/lib/diccionario.ts` | Diccionario inglés → español chileno |
+| `src/lib/red.ts` | Descargas seguras (bloquea direcciones internas) |
+| `src/lib/db.ts` | Recetario en SQLite |
+| `PRODUCT.md`, `DESIGN.md` | Para quién es la app y su sistema de diseño |
