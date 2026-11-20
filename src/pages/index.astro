@@ -1,13 +1,14 @@
 ---
 import Icono from '../components/Icono.astro';
 import Layout from '../layouts/Layout.astro';
-import { listarRecetas } from '../lib/db.ts';
+import { listarRecetas, pendientesPorReceta } from '../lib/db.ts';
 import { sitio } from '../lib/importar.ts';
 
 const consulta = Astro.url.searchParams.get('q')?.trim() ?? '';
 const recetas = listarRecetas(consulta);
 const total = consulta ? listarRecetas().length : recetas.length;
 const plural = (n: number, una: string, varias: string) => `${n} ${n === 1 ? una : varias}`;
+const porComprar = pendientesPorReceta();
 ---
 
 <Layout>
@@ -104,7 +105,12 @@ const plural = (n: number, una: string, varias: string) => `${n} ${n === 1 ? una
 				) : (
 					<ul class="mt-8">
 						{recetas.map((receta) => {
-							const detalle = [sitio(receta.url) ?? 'Escrita a mano', receta.porciones].filter(Boolean);
+							const pendientes = porComprar.get(receta.id);
+							const detalle = [
+								sitio(receta.url) ?? 'Escrita a mano',
+								receta.porciones,
+								pendientes && `${pendientes} por comprar`,
+							].filter(Boolean);
 							return (
 								<li>
 									<a

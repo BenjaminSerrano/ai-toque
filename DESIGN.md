@@ -254,6 +254,9 @@ Casilla, nombre, puntitos y cantidad en 600 tabular a la derecha (hasta el 45 % 
 ### Paso numerado (signature)
 Número monumental en tiza al 90 %, a la derecha de una columna de 60 px (80 px desde 640 px), texto de lectura a la derecha y casilla "Listo" debajo. El primer paso sin marcar es el paso en curso: su número se vuelve amarillo. Los pasos marcados se tachan igual que los ingredientes. Las marcas sobreviven a un bloqueo del celular (sessionStorage) y aparece "Desmarcar todo".
 
+### Lista de compras
+Junto al título "Ingredientes", dos enlaces de modo, **Cocinar** y **Comprar (n)**, con el mismo subrayado amarillo de la barra para el modo actual. En Comprar, la casilla de cada ingrediente significa "me falta" y no tacha. Debajo aparece un contenedor de trazo "Para comprar" con lo que falta, en el mismo módulo de menú; al marcar algo como comprado se tacha como al cocinar. Sus acciones: "Compartir la lista" (secundario; usa el menú de compartir del celular o copia el texto) y "Vaciar la lista" (texto con el ícono borrar). La lista se guarda en el recetario para toda la casa, y el inicio muestra "n por comprar" en el detalle de la receta.
+
 ### Íconos
 Set propio de un solo trazo: 24 × 24, línea de 2 px, puntas y uniones redondas, `currentColor`, 20 px por defecto. Incluye volver, lápiz, externo, info, lupa, pegar, basura, reloj, porciones y borrar. Los nuevos íconos se dibujan con la misma regla.
 

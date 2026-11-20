@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { normalizar } from './adaptar.ts';
+import { agrupar } from './formato.ts';
 
 export interface DatosReceta {
 	titulo: string;
@@ -44,7 +45,15 @@ db.exec(`
 		original TEXT NOT NULL DEFAULT '',
 		busqueda TEXT NOT NULL DEFAULT '',
 		creada TEXT NOT NULL DEFAULT (datetime('now'))
-	)
+	);
+
+	-- Lista de compras de cada receta, compartida por la casa: lo que falta y si ya se compró.
+	CREATE TABLE IF NOT EXISTS compras (
+		receta_id INTEGER NOT NULL REFERENCES recetas(id) ON DELETE CASCADE,
+		linea TEXT NOT NULL,
+		comprado INTEGER NOT NULL DEFAULT 0,
+		PRIMARY KEY (receta_id, linea)
+	);
 `);
 
 const conBusqueda = (d: DatosReceta) => ({
@@ -84,10 +93,49 @@ export function actualizarReceta(id: number, datos: DatosReceta): void {
 		 ingredientes = :ingredientes, pasos = :pasos, notas = :notas, original = :original, busqueda = :busqueda
 		 WHERE id = :id`,
 	).run({ ...conBusqueda(datos), id });
+	// Lo que estaba en la lista de compras y ya no es un ingrediente sale de la lista.
+	const vigentes = new Set(lineasDeIngredientes(datos.ingredientes));
+	for (const linea of comprasDeReceta(id).keys()) if (!vigentes.has(linea)) anotarFalta(id, linea, false);
 }
 
 export function eliminarReceta(id: number): void {
 	db.prepare('DELETE FROM recetas WHERE id = ?').run(id);
+}
+
+/** Las líneas de ingredientes tal como se muestran (sin subtítulos). */
+export function lineasDeIngredientes(ingredientes: string): string[] {
+	return agrupar(ingredientes).flatMap((grupo) => grupo.lineas);
+}
+
+/** Lista de compras de una receta: cada ingrediente que falta y si ya se compró. */
+export function comprasDeReceta(id: number): Map<string, boolean> {
+	const filas = db.prepare('SELECT linea, comprado FROM compras WHERE receta_id = ?').all(id) as unknown as {
+		linea: string;
+		comprado: number;
+	}[];
+	return new Map(filas.map((fila) => [fila.linea, fila.comprado === 1]));
+}
+
+/** Agrega un ingrediente a la lista de compras, o lo saca. */
+export function anotarFalta(id: number, linea: string, falta: boolean): void {
+	if (falta) db.prepare('INSERT OR IGNORE INTO compras (receta_id, linea) VALUES (?, ?)').run(id, linea);
+	else db.prepare('DELETE FROM compras WHERE receta_id = ? AND linea = ?').run(id, linea);
+}
+
+export function marcarComprado(id: number, linea: string, comprado: boolean): void {
+	db.prepare('UPDATE compras SET comprado = ? WHERE receta_id = ? AND linea = ?').run(comprado ? 1 : 0, id, linea);
+}
+
+export function vaciarCompras(id: number): void {
+	db.prepare('DELETE FROM compras WHERE receta_id = ?').run(id);
+}
+
+/** Cuántas cosas quedan por comprar en cada receta que tiene lista. */
+export function pendientesPorReceta(): Map<number, number> {
+	const filas = db
+		.prepare('SELECT receta_id, count(*) AS n FROM compras WHERE comprado = 0 GROUP BY receta_id')
+		.all() as unknown as { receta_id: number; n: number }[];
+	return new Map(filas.map((fila) => [fila.receta_id, fila.n]));
 }
 
 /** Lee el formulario de receta (crear o editar). */

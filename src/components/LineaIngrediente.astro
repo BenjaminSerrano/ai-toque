@@ -1,0 +1,26 @@
+---
+// Un ingrediente como en el menú de la pizarra: nombre, puntitos y cantidad a la derecha.
+import { separarCantidad } from '../lib/formato.ts';
+
+interface Props {
+	linea: string;
+}
+
+const { nombre, cantidad } = separarCantidad(Astro.props.linea);
+---
+
+<span class="flex min-w-0 flex-1 items-baseline gap-3 text-xl leading-snug">
+	<span class="min-w-0">
+		<span class="tachable">{nombre}</span>
+	</span>
+	{
+		cantidad && (
+			<>
+				<span class="puntos" aria-hidden="true" />
+				<span class="max-w-[45%] shrink-0 text-right font-semibold tabular-nums">
+					<span class="tachable">{cantidad}</span>
+				</span>
+			</>
+		)
+	}
+</span>

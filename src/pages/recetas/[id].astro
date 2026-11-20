@@ -1,7 +1,8 @@
 ---
 import Icono from '../../components/Icono.astro';
+import LineaIngrediente from '../../components/LineaIngrediente.astro';
 import Layout from '../../layouts/Layout.astro';
-import { obtenerReceta } from '../../lib/db.ts';
+import { comprasDeReceta, obtenerReceta } from '../../lib/db.ts';
 import { agrupar, separarCantidad } from '../../lib/formato.ts';
 import { sitio as nombreSitio } from '../../lib/importar.ts';
 
@@ -13,6 +14,21 @@ const ingredientes = agrupar(receta.ingredientes);
 const pasos = agrupar(receta.pasos);
 const sitio = nombreSitio(receta.url);
 const yaGuardada = Astro.url.searchParams.has('ya');
+
+// Modo comprar: se marca lo que falta y queda una lista guardada para toda la casa.
+const comprando = Astro.url.searchParams.has('comprar');
+const compras = comprasDeReceta(id);
+// Una línea repetida en dos grupos ("1 huevo" en la masa y en el relleno) se compra una vez.
+const paraComprar = [...new Set(ingredientes.flatMap((grupo) => grupo.lineas))];
+const pendientes = paraComprar.filter((linea) => compras.get(linea) === false).length;
+const textoCompra = (linea: string) => {
+	const { nombre, cantidad } = separarCantidad(linea);
+	return cantidad ? `${nombre} — ${cantidad}` : nombre;
+};
+const claseModo =
+	'rounded-md px-2 py-2 font-semibold decoration-amarillo decoration-[3px] underline-offset-[10px] hover:underline';
+
+let ingrediente = 0;
 let numero = 0;
 ---
 
@@ -85,7 +101,29 @@ let numero = 0;
 				aria-labelledby="ingredientes-titulo"
 				class="lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:self-start lg:overflow-y-auto lg:pr-2"
 			>
-				<h2 id="ingredientes-titulo" class="tiza text-6xl">Ingredientes</h2>
+				<div class="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+					<h2 id="ingredientes-titulo" class="tiza text-6xl">Ingredientes</h2>
+					{
+						paraComprar.length > 0 && (
+							<nav aria-label="Ingredientes para" class="flex items-center gap-2">
+								<a
+									href={`/recetas/${id}#ingredientes-titulo`}
+									class:list={[claseModo, !comprando && 'underline']}
+									aria-current={comprando ? undefined : 'page'}
+								>
+									Cocinar
+								</a>
+								<a
+									href={`/recetas/${id}?comprar#ingredientes-titulo`}
+									class:list={[claseModo, comprando && 'underline']}
+									aria-current={comprando ? 'page' : undefined}
+								>
+									Comprar<span class="tabular-nums" data-cuenta>{pendientes > 0 && ` (${pendientes})`}</span>
+								</a>
+							</nav>
+						)
+					}
+				</div>
 				{
 					ingredientes.length === 0 && (
 						<p class="mt-4 text-tiza/75">
@@ -94,36 +132,77 @@ let numero = 0;
 					)
 				}
 				{
+					comprando && paraComprar.length > 0 && (
+						<p class="mt-3 text-base text-tiza/75">Marca lo que te falta. La lista queda guardada para toda la casa.</p>
+					)
+				}
+				{
 					ingredientes.map((grupo) => (
 						<>
 							{grupo.titulo && <h3 class="tiza mt-8 text-4xl text-tiza/90">{grupo.titulo}</h3>}
 							<ul class="mt-3">
-								{grupo.lineas.map((linea) => {
-									const { nombre, cantidad } = separarCantidad(linea);
-									return (
-										<li>
-											<label class="marcable flex cursor-pointer items-start gap-4 py-2.5">
-												<input type="checkbox" class="mt-1" />
-												<span class="flex min-w-0 flex-1 items-baseline gap-3 text-xl leading-snug">
-													<span class="min-w-0">
-														<span class="tachable">{nombre}</span>
-													</span>
-													{cantidad && (
-														<>
-															<span class="puntos" aria-hidden="true" />
-															<span class="max-w-[45%] shrink-0 text-right font-semibold tabular-nums">
-																<span class="tachable">{cantidad}</span>
-															</span>
-														</>
-													)}
-												</span>
+								{grupo.lineas.map((linea) => (
+									<li>
+										{comprando ? (
+											<label class="flex cursor-pointer items-start gap-4 py-2.5">
+												<input type="checkbox" class="mt-1" data-falta value={linea} checked={compras.has(linea)} />
+												<LineaIngrediente linea={linea} />
 											</label>
-										</li>
-									);
-								})}
+										) : (
+											<label class="marcable flex cursor-pointer items-start gap-4 py-2.5">
+												<input type="checkbox" class="mt-1" data-marca={`i${ingrediente++}`} />
+												<LineaIngrediente linea={linea} />
+											</label>
+										)}
+									</li>
+								))}
 							</ul>
 						</>
 					))
+				}
+
+				{
+					comprando && paraComprar.length > 0 && (
+						<div class="trazo mt-10 p-5 sm:p-6" data-lista-compras data-titulo={receta.titulo}>
+							<h3 class="tiza text-4xl">Para comprar</h3>
+							<p class="mt-2 text-base text-tiza/75" data-vacia hidden={compras.size > 0}>
+								Todavía no hay nada. Marca arriba lo que te falta.
+							</p>
+							<p class="mt-2 text-base text-tiza/75" data-ayuda hidden={compras.size === 0}>
+								Marca lo que vayas comprando.
+							</p>
+							<ul class="mt-2">
+								{paraComprar.map((linea) => (
+									<li hidden={!compras.has(linea)} data-texto={textoCompra(linea)}>
+										<label class="marcable flex cursor-pointer items-start gap-4 py-2.5">
+											<input type="checkbox" class="mt-1" data-comprado value={linea} checked={compras.get(linea) === true} />
+											<LineaIngrediente linea={linea} />
+										</label>
+									</li>
+								))}
+							</ul>
+							<div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3" data-acciones hidden={compras.size === 0}>
+								<button type="button" class="boton-secundario" data-compartir>
+									Compartir la lista
+								</button>
+								<span role="status" class="text-base text-tiza/80" data-aviso />
+								<form method="post" action={`/recetas/${id}/compras`} class="ml-auto">
+									<input type="hidden" name="accion" value="vaciar" />
+									<button type="submit" class="inline-flex items-center gap-2 py-2 text-base font-semibold text-tiza/80 hover:text-tiza">
+										<Icono nombre="borrar" class="size-4" />
+										Vaciar la lista
+									</button>
+								</form>
+							</div>
+							<p role="alert" class="aviso mt-5" data-error hidden>
+								<Icono nombre="info" class="mt-0.5 size-6 shrink-0 text-celeste" />
+								<span>
+									No se pudo guardar el último cambio. <a href="" class="enlace">Recarga la página</a> para ver la lista como
+									está.
+								</span>
+							</p>
+						</div>
+					)
 				}
 			</section>
 
@@ -162,7 +241,7 @@ let numero = 0;
 													<span class="tachable">{linea}</span>
 												</span>
 												<span class="mt-3 flex items-center gap-2 text-base text-tiza/75">
-													<input type="checkbox" class="size-6" />
+													<input type="checkbox" class="size-6" data-marca={`p${numero}`} />
 													Listo
 												</span>
 											</label>
@@ -195,19 +274,21 @@ let numero = 0;
 </style>
 
 <script>
-	// Recuerda lo marcado mientras dure la sesión (si el celular se bloquea, no se pierde)
-	// y señala el paso en curso.
 	const articulo = document.querySelector<HTMLElement>('[data-receta]');
+
+	// Cocinar: recuerda lo marcado mientras dure la sesión (si el celular se bloquea, no se pierde)
+	// y señala el paso en curso. Cada casilla tiene su clave (i3, p2) para no mezclarse con el modo comprar.
 	if (articulo) {
 		const clave = `ai-toque:marcas:${articulo.dataset.receta}`;
-		const casillas = [...articulo.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')];
+		const casillas = [...articulo.querySelectorAll<HTMLInputElement>('input[data-marca]')];
 		const desmarcar = document.querySelector<HTMLButtonElement>('[data-desmarcar]');
 
-		const leer = (): boolean[] => {
+		const leer = (): Record<string, boolean> => {
 			try {
-				return JSON.parse(sessionStorage.getItem(clave) ?? '[]');
+				const marcas = JSON.parse(sessionStorage.getItem(clave) ?? '{}');
+				return marcas && typeof marcas === 'object' && !Array.isArray(marcas) ? marcas : {};
 			} catch {
-				return [];
+				return {};
 			}
 		};
 		const actualizar = () => {
@@ -218,20 +299,121 @@ let numero = 0;
 			desmarcar?.classList.toggle('hidden', !alguna);
 			desmarcar?.classList.toggle('inline-flex', alguna);
 			try {
-				sessionStorage.setItem(clave, JSON.stringify(casillas.map((c) => c.checked)));
+				const marcas = leer();
+				for (const casilla of casillas) marcas[casilla.dataset.marca!] = casilla.checked;
+				sessionStorage.setItem(clave, JSON.stringify(marcas));
 			} catch {
 				// Sin almacenamiento disponible: las marcas solo duran hasta recargar.
 			}
 		};
 
-		leer().forEach((marcada, i) => {
-			if (casillas[i]) casillas[i].checked = marcada;
+		const marcas = leer();
+		for (const casilla of casillas) casilla.checked = marcas[casilla.dataset.marca!] === true;
+		articulo.addEventListener('change', (evento) => {
+			if ((evento.target as HTMLElement).matches('[data-marca]')) actualizar();
 		});
-		articulo.addEventListener('change', actualizar);
 		desmarcar?.addEventListener('click', () => {
 			for (const casilla of casillas) casilla.checked = false;
+			try {
+				sessionStorage.removeItem(clave);
+			} catch {
+				// Nada guardado que borrar.
+			}
 			actualizar();
 		});
 		actualizar();
+	}
+
+	// Comprar: cada cambio se guarda al tiro en el recetario, para toda la casa.
+	const lista = document.querySelector<HTMLElement>('[data-lista-compras]');
+	if (articulo && lista) {
+		const ruta = `/recetas/${articulo.dataset.receta}/compras`;
+		const faltas = [...articulo.querySelectorAll<HTMLInputElement>('input[data-falta]')];
+		const items = [...lista.querySelectorAll<HTMLLIElement>('li[data-texto]')];
+		const casillaDe = (item: HTMLLIElement) => item.querySelector<HTMLInputElement>('input[data-comprado]')!;
+		const parte = (nombre: string) => lista.querySelector<HTMLElement>(`[data-${nombre}]`)!;
+		const cuenta = document.querySelector<HTMLElement>('[data-cuenta]');
+
+		const pintar = () => {
+			const enLista = new Set(faltas.filter((c) => c.checked).map((c) => c.value));
+			for (const item of items) {
+				item.hidden = !enLista.has(casillaDe(item).value);
+				if (item.hidden) casillaDe(item).checked = false;
+			}
+			const visibles = items.filter((item) => !item.hidden);
+			const pendientes = visibles.filter((item) => !casillaDe(item).checked).length;
+			parte('vacia').hidden = visibles.length > 0;
+			parte('ayuda').hidden = visibles.length === 0;
+			parte('acciones').hidden = visibles.length === 0;
+			if (cuenta) cuenta.textContent = pendientes ? ` (${pendientes})` : '';
+		};
+
+		// Los cambios se envían en orden, uno tras otro, para que el último toque sea el que queda.
+		let cola = Promise.resolve();
+		const guardar = (accion: 'falta' | 'comprado', casilla: HTMLInputElement) => {
+			const datos = new FormData();
+			datos.set('accion', accion);
+			datos.set('linea', casilla.value);
+			datos.set('valor', casilla.checked ? '1' : '0');
+			cola = cola.then(async () => {
+				try {
+					const respuesta = await fetch(ruta, { method: 'POST', body: datos });
+					if (respuesta.status !== 204) throw new Error(`Respuesta ${respuesta.status}`);
+				} catch {
+					parte('error').hidden = false;
+				}
+			});
+		};
+
+		articulo.addEventListener('change', (evento) => {
+			const casilla = evento.target as HTMLInputElement;
+			if (casilla.matches('[data-falta]')) {
+				// La misma línea puede estar en dos grupos: se marcan juntas.
+				for (const otra of faltas) if (otra.value === casilla.value) otra.checked = casilla.checked;
+				pintar();
+				guardar('falta', casilla);
+			} else if (casilla.matches('[data-comprado]')) {
+				pintar();
+				guardar('comprado', casilla);
+			}
+		});
+
+		// Compartir lo que falta comprar (WhatsApp u otra app); si el navegador no puede, se copia.
+		const aviso = parte('aviso');
+		let ultimoAviso = '';
+		let temporizador: number | undefined;
+		const avisar = (mensaje: string) => {
+			// VoiceOver no repite un mensaje idéntico: un espacio invisible lo hace distinto.
+			const texto = mensaje === ultimoAviso ? `${mensaje} ` : mensaje;
+			ultimoAviso = texto;
+			clearTimeout(temporizador);
+			aviso.textContent = '';
+			requestAnimationFrame(() => (aviso.textContent = texto));
+			temporizador = window.setTimeout(() => (aviso.textContent = ''), 2500);
+		};
+		parte('compartir').addEventListener('click', async () => {
+			const faltan = items.filter((item) => !item.hidden && !casillaDe(item).checked).map((item) => `• ${item.dataset.texto}`);
+			if (faltan.length === 0) return avisar('Ya está todo comprado.');
+			const texto = `Para comprar (${lista.dataset.titulo}):\n${faltan.join('\n')}`;
+			if (navigator.share) {
+				try {
+					await navigator.share({ text: texto });
+					return;
+				} catch (error) {
+					if ((error as DOMException).name === 'AbortError') return;
+				}
+			}
+			try {
+				await navigator.clipboard.writeText(texto);
+				avisar('Lista copiada.');
+			} catch {
+				avisar('No se pudo copiar.');
+			}
+		});
+
+		// Al volver con "atrás", recargar: alguien de la casa pudo cambiar la lista mientras tanto.
+		addEventListener('pageshow', (evento) => {
+			if (evento.persisted) location.reload();
+		});
 	}
 </script>
