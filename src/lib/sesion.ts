@@ -23,7 +23,9 @@ export function iguales(a: string, b: string): boolean {
 export function rutaDeVuelta(volver: string | null | undefined): string {
 	try {
 		const url = new URL(volver || '/', 'http://local');
-		if (url.origin === 'http://local' && url.pathname !== '/entrar') return url.pathname + url.search;
+		// "/.//malo.cl" queda como "//malo.cl", que el navegador lee como otro sitio: se deja una sola "/".
+		const ruta = '/' + url.pathname.replace(/^\/+/, '');
+		if (url.origin === 'http://local' && ruta !== '/entrar') return ruta + url.search;
 	} catch {
 		// Si no se puede leer, se vuelve al inicio.
 	}

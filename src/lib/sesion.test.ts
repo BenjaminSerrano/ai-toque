@@ -27,3 +27,17 @@ for (const ajena of ['https://malo.cl/', '//malo.cl/', '/\\malo.cl/', '/\t/malo.
 		assert.equal(rutaDeVuelta(ajena), '/');
 	});
 }
+
+// El navegador resuelve "." y ".." y quedaría "//malo.cl": se queda en este sitio.
+for (const ajena of ['/.//malo.cl', '/..//malo.cl', '/./\\malo.cl', '/%2e//malo.cl', '/.///malo.cl']) {
+	test(`rutaDeVuelta no deja "//" al inicio: ${JSON.stringify(ajena)}`, () => {
+		const ruta = rutaDeVuelta(ajena);
+		assert.ok(!/^\/[/\\]/.test(ruta), ruta);
+		assert.equal(new URL(ruta, 'https://ai-toque.cl').host, 'ai-toque.cl');
+	});
+}
+
+test('rutaDeVuelta no vuelve a /entrar aunque venga disfrazada', () => {
+	assert.equal(rutaDeVuelta('//entrar'), '/');
+	assert.equal(rutaDeVuelta('/./entrar'), '/');
+});
